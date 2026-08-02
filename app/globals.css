@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply bg-ink text-paper font-body antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+
+  /* Visible, deliberate focus state — brass ring on the ink background */
+  :focus-visible {
+    outline: 2px solid #A9793B;
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: #A9793B;
+    color: #1B1F1A;
+  }
+}
+
+@layer components {
+  /* Frame-number caption — the site's signature motif, used on every
+     gallery image like a contact-sheet frame label. Legitimate use of
+     numbering: it's literally the shot's sequence number. */
+  .frame-label {
+    @apply font-mono text-xs tracking-widest uppercase text-brass;
+  }
+}
