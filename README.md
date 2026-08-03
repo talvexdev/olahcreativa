@@ -5,10 +5,12 @@ Built to stay inside every vendor's free tier by design — see "Free-tier disci
 
 ## Stack
 
-- **Next.js 15** (App Router, TypeScript, Tailwind) — hosted on Vercel
-- **Sanity Studio v3**, embedded at `/studio` — content modeling, page builder
+- **Next.js 16** (App Router, TypeScript, Tailwind CSS v4) — hosted on Vercel
+- **Sanity Studio v6**, embedded at `/studio` — content modeling, page builder
 - **Cloudinary** — image storage/CDN, via `sanity-plugin-cloudinary` + `next-cloudinary`
 - **Mux** — video encoding/streaming, via `sanity-plugin-mux-input` + `@mux/mux-player-react`
+
+**Requirements:** Node.js 20+ (22 or 24 LTS recommended; Node 25 may show a `nanoid` engine warning from Sanity — harmless, or use nvm to switch to 24)
 
 ## Design direction
 
@@ -18,7 +20,7 @@ foreground (`#EFEBE2`), a single muted brass accent (`#A9793B`) used sparingly.
 Display type is Fraunces (editorial serif), body is Inter, captions/frame-numbers
 are IBM Plex Mono — evoking contact-sheet frame labels and EXIF data, which is
 also the site's signature element (`frame-label` class, used throughout).
-Tokens live in `tailwind.config.ts`.
+Design tokens live in `app/globals.css` (`@theme` block).
 
 ## Getting started
 
@@ -26,6 +28,7 @@ Tokens live in `tailwind.config.ts`.
 npm install
 cp .env.local.example .env.local   # fill in real values, see below
 npm run dev
+npm run lint   # ESLint CLI (not next lint)
 ```
 
 Visit `/` for the public site, `/studio` for the CMS, `/contact` for the contact form.

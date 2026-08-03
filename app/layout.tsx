@@ -9,7 +9,7 @@ import { websiteJsonLd } from "@/lib/json-ld";
 
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-mono", display: "swap" });
+const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-ibm-mono", display: "swap" });
 
 export async function generateMetadata(): Promise<Metadata> {
   if (!isSanityConfigured()) {

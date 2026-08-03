@@ -6,7 +6,6 @@ const nextConfig = {
       { protocol: 'https', hostname: 'image.mux.com' },
     ],
   },
-  eslint: { ignoreDuringBuilds: false },
 };
 
 module.exports = nextConfig;

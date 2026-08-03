@@ -1,6 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-ink: #1b1f1a;
+  --color-paper: #efebe2;
+  --color-brass: #a9793b;
+  --color-moss: #545c46;
+  --color-rust: #7a3b2e;
+  --font-display: var(--font-fraunces), serif;
+  --font-body: var(--font-inter), sans-serif;
+  --font-mono: var(--font-ibm-mono), monospace;
+  --text-hero: clamp(2.5rem, 6vw, 6rem);
+  --text-hero--line-height: 0.95;
+  --text-hero--letter-spacing: -0.02em;
+  --max-width-8xl: 96rem;
+}
 
 @layer base {
   html {
@@ -26,22 +40,18 @@
     @apply font-display;
   }
 
-  /* Visible, deliberate focus state — brass ring on the ink background */
   :focus-visible {
-    outline: 2px solid #A9793B;
+    outline: 2px solid #a9793b;
     outline-offset: 3px;
   }
 
   ::selection {
-    background: #A9793B;
-    color: #1B1F1A;
+    background: #a9793b;
+    color: #1b1f1a;
   }
 }
 
 @layer components {
-  /* Frame-number caption — the site's signature motif, used on every
-     gallery image like a contact-sheet frame label. Legitimate use of
-     numbering: it's literally the shot's sequence number. */
   .frame-label {
     @apply font-mono text-xs tracking-widest uppercase text-brass;
   }
