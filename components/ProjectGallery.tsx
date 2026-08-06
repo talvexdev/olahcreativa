@@ -47,9 +47,9 @@ export function ProjectGallery({ items }: Props) {
 
   return (
     <>
-      <div className="flex flex-col gap-1 bg-moss/40">
+      <div className="flex flex-col gap-1 bg-line">
         {items.map((item, i) => (
-          <div key={i} className="relative bg-ink">
+          <div key={i} className="relative bg-card">
             {item.type === "video" ? (
               <MuxVideoPlayer
                 playbackId={item.playbackId}

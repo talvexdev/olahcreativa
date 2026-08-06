@@ -1,18 +1,54 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Dark mode driven by a class on <html>, not by prefers-color-scheme —
+   the class is what lets the toggle override the system preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Light theme = the defaults. */
+:root {
+  --bg: #faf6ef;
+  --surface: #f2ede4;
+  --card: #ffffff;
+  --fg: #0e1a4a;
+  --muted: #5c6684;
+  --line: rgba(14, 26, 74, 0.14);
+  --accent: #c8102e;
+  --wash: rgba(200, 16, 46, 0.09);
+}
+
+/* Dark theme: same names, different values. */
+.dark {
+  --bg: #0a0b10;
+  --surface: #111420;
+  --card: #161a26;
+  --fg: #f4f1ea;
+  --muted: #98a0b4;
+  --line: rgba(244, 241, 234, 0.13);
+  --accent: #e1213c;
+  --wash: rgba(225, 33, 60, 0.12);
+}
+
+/* `inline` is what makes theming work: utilities compile to
+   `var(--bg)` instead of baking in the light-theme value. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-wash: var(--wash);
+}
+
 @theme {
-  --color-ink: #1b1f1a;
-  --color-paper: #efebe2;
-  --color-brass: #a9793b;
-  --color-moss: #545c46;
-  --color-rust: #7a3b2e;
   --font-display: var(--font-fraunces), serif;
   --font-body: var(--font-inter), sans-serif;
   --font-mono: var(--font-ibm-mono), monospace;
-  --text-hero: clamp(2.5rem, 6vw, 6rem);
-  --text-hero--line-height: 0.95;
-  --text-hero--letter-spacing: -0.02em;
+  --text-hero: clamp(2.5rem, 8vw, 9rem);
+  --text-hero--line-height: 0.92;
+  --text-hero--letter-spacing: -0.045em;
   --max-width-8xl: 96rem;
 }
 
@@ -33,7 +69,8 @@
   }
 
   body {
-    @apply bg-ink text-paper font-body antialiased;
+    @apply bg-bg text-fg font-body antialiased;
+    transition: background-color 400ms ease, color 400ms ease;
   }
 
   h1, h2, h3, h4 {
@@ -41,18 +78,18 @@
   }
 
   :focus-visible {
-    outline: 2px solid #a9793b;
+    outline: 2px solid var(--accent);
     outline-offset: 3px;
   }
 
   ::selection {
-    background: #a9793b;
-    color: #1b1f1a;
+    background: var(--accent);
+    color: #fff;
   }
 }
 
 @layer components {
   .frame-label {
-    @apply font-mono text-xs tracking-widest uppercase text-brass;
+    @apply font-mono text-xs tracking-[0.2em] uppercase text-accent;
   }
 }

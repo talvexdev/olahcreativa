@@ -11,6 +11,20 @@ const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", dis
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-ibm-mono", display: "swap" });
 
+/**
+ * Runs before first paint so the page never flashes the wrong theme.
+ * Stored choice wins; otherwise fall back to the OS preference.
+ */
+const themeScript = `
+(function(){
+  try {
+    var t = localStorage.getItem("theme");
+    if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    if (t === "dark") document.documentElement.classList.add("dark");
+  } catch (e) {}
+})();
+`;
+
 export async function generateMetadata(): Promise<Metadata> {
   if (!isSanityConfigured()) {
     return { title: { default: "Portfolio", template: "%s — Portfolio" } };
@@ -33,7 +47,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   });
 
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${mono.variable}`}>
+    <html
+      lang="es"
+      suppressHydrationWarning
+      className={`${fraunces.variable} ${inter.variable} ${mono.variable}`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <script
           type="application/ld+json"

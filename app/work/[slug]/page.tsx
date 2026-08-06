@@ -60,7 +60,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       />
       <header className="mx-auto max-w-8xl px-6 pb-10 pt-16">
         <p className="frame-label mb-3">{project.category}{project.clientName ? ` — ${project.clientName}` : ""}</p>
-        <h1 className="font-display text-4xl text-paper sm:text-6xl">{project.title}</h1>
+        <h1 className="font-display text-4xl text-fg sm:text-6xl">{project.title}</h1>
       </header>
 
       <ProjectGallery items={galleryItems} />

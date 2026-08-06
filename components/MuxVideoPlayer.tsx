@@ -37,7 +37,7 @@ export function MuxVideoPlayer({ playbackId, poster, autoplayMuted = false }: Pr
   }, []);
 
   return (
-    <div ref={ref} className="relative aspect-video w-full overflow-hidden bg-ink">
+    <div ref={ref} className="relative aspect-video w-full overflow-hidden bg-card">
       {inView ? (
         <MuxPlayer
           playbackId={playbackId}
@@ -53,7 +53,7 @@ export function MuxVideoPlayer({ playbackId, poster, autoplayMuted = false }: Pr
       ) : poster ? (
         <CloudinaryPhoto publicId={poster.publicId} alt={poster.alt} variant="hero" />
       ) : (
-        <div className="h-full w-full bg-moss/30" aria-hidden />
+        <div className="h-full w-full bg-card" aria-hidden />
       )}
     </div>
   );

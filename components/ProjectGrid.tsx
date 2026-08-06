@@ -15,12 +15,12 @@ type Project = {
  */
 export function ProjectGrid({ projects }: { projects: Project[] }) {
   return (
-    <div className="grid grid-cols-1 gap-px bg-moss/40 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-px bg-line sm:grid-cols-2 lg:grid-cols-3">
       {projects.map((project, i) => (
         <Link
           key={project._id}
           href={`/work/${project.slug}`}
-          className="group relative aspect-[4/5] overflow-hidden bg-ink"
+          className="group relative aspect-[4/5] overflow-hidden bg-card"
         >
           <div className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105">
             <CloudinaryPhoto
@@ -30,9 +30,9 @@ export function ProjectGrid({ projects }: { projects: Project[] }) {
               priority={i < 3}
             />
           </div>
-          <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-ink/90 via-transparent to-transparent p-5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-bg/95 via-transparent to-transparent p-5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             <span className="frame-label mb-1">No. {String(i + 1).padStart(3, "0")}{project.category ? ` — ${project.category}` : ""}</span>
-            <h3 className="font-display text-xl text-paper">{project.title}</h3>
+            <h3 className="font-display text-xl text-fg">{project.title}</h3>
           </div>
         </Link>
       ))}

@@ -3,6 +3,9 @@ import { ImageGridBlock } from "./blocks/ImageGrid";
 import { TextBlockView } from "./blocks/TextBlock";
 import { TestimonialBlock } from "./blocks/Testimonial";
 import { CtaBlock } from "./blocks/Cta";
+import { ProcessBlock } from "./blocks/Process";
+import { ServicesBlock } from "./blocks/Services";
+import { ContactBlock } from "./blocks/Contact";
 
 /**
  * Maps each Sanity pageBuilder block type to its React component.
@@ -16,6 +19,9 @@ const BLOCKS: Record<string, React.ComponentType<{ block: any }>> = {
   textBlock: TextBlockView,
   testimonialBlock: TestimonialBlock,
   ctaBlock: CtaBlock,
+  processBlock: ProcessBlock,
+  servicesBlock: ServicesBlock,
+  contactBlock: ContactBlock,
 };
 
 export function PageBuilder({ blocks }: { blocks: any[] }) {
