@@ -20,7 +20,7 @@ export default async function HomePage() {
     <>
       <section className="mx-auto max-w-8xl px-6 pb-16 pt-20">
         <p className="frame-label mb-4">Selected work</p>
-        <h1 className="text-hero font-display max-w-4xl text-paper">
+        <h1 className="text-hero font-display max-w-4xl text-fg">
           {tagline}
         </h1>
       </section>

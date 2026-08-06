@@ -10,7 +10,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!isSanityConfigured()) {
     return [
       { url: siteUrl, lastModified: now, changeFrequency: "weekly", priority: 1 },
-      { url: `${siteUrl}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     ];
   }
 
@@ -21,7 +20,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: siteUrl, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${siteUrl}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     ...projects.map((p) => ({
       url: `${siteUrl}/work/${p.slug}`,
       lastModified: now,
