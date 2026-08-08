@@ -38,8 +38,8 @@ const extractOptions = { resolveMuxRefs: resolveMuxAssetRefs };
 
 /**
  * Sanity webhook target — creates mediaTombstone records when media is removed
- * from a project/page (delete or update). The daily cron permanently deletes
- * assets after the 14-day grace window.
+ * from a project/page (delete or update). Tombstones give editors a 14-day grace
+ * window to restore before manually deleting assets in Cloudinary/Mux.
  */
 export async function POST(req: NextRequest) {
   try {

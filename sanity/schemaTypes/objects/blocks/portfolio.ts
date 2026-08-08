@@ -2,7 +2,7 @@ import { defineType, defineField, defineArrayMember } from "sanity";
 
 /**
  * Portfolio section — each project card is rendered by components/blocks/Portfolio.tsx.
- * Hero: optional Mux video or Cloudinary still. Clips and gallery use cloudinaryImage.
+ * Hero: optional Mux video or Cloudinary still. Clips: Mux short loops or Cloudinary stills/GIFs.
  */
 export default defineType({
   name: "portfolioBlock",
@@ -89,7 +89,8 @@ export default defineType({
               name: "clips",
               title: "Clips cortos",
               type: "array",
-              description: "La fila de recuadros pequeños. Máximo 4.",
+              description:
+                "La fila de recuadros pequeños. Máximo 4. Usa Mux para loops de video cortos o Cloudinary para stills y GIFs animados.",
               validation: (R) => R.max(4),
               of: [
                 defineArrayMember({
@@ -104,12 +105,31 @@ export default defineType({
                     }),
                     defineField({ name: "caption", title: "Pie", type: "string" }),
                     defineField({
+                      name: "video",
+                      title: "Video corto (Mux)",
+                      type: "muxVideo",
+                      description:
+                        "Loops sin audio — activa “Autoplay muted” en el video para preview en la cuadrícula. No subas GIFs aquí; usa la imagen Cloudinary.",
+                    }),
+                    defineField({
                       name: "image",
-                      title: "Imagen / still",
+                      title: "Imagen / GIF",
                       type: "cloudinaryImage",
+                      description:
+                        "Stills o GIFs animados desde Cloudinary. El video Mux tiene prioridad si ambos están definidos.",
                     }),
                   ],
-                  preview: { select: { title: "label", subtitle: "caption", media: "image.asset" } },
+                  preview: {
+                    select: {
+                      title: "label",
+                      subtitle: "caption",
+                      videoPoster: "video.poster.asset",
+                      image: "image.asset",
+                    },
+                    prepare({ title, subtitle, videoPoster, image }) {
+                      return { title, subtitle, media: videoPoster ?? image };
+                    },
+                  },
                 }),
               ],
             }),

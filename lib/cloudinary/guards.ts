@@ -24,6 +24,10 @@ export function normalizeCloudinaryImage(value: unknown): SanityCloudinaryImage 
     width: typeof record.width === "number" ? record.width : undefined,
     height: typeof record.height === "number" ? record.height : undefined,
     caption: typeof record.caption === "string" ? record.caption : undefined,
+    format: typeof record.format === "string" ? record.format : undefined,
+    resourceType:
+      typeof record.resourceType === "string" ? record.resourceType : undefined,
+    pages: typeof record.pages === "number" ? record.pages : undefined,
   };
 }
 

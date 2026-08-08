@@ -84,6 +84,7 @@ export const pageBySlugQuery = groq`*[_type == "page" && slug.current == $slug][
         clips[]{
           label,
           caption,
+          video ${muxVideoProjection},
           image ${cloudinaryImageProjection}
         },
         gallery[]{

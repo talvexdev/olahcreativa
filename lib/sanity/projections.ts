@@ -8,13 +8,16 @@ export const cloudinaryImageProjection = `{
   "url": coalesce(asset.secure_url, asset.url),
   "width": asset.width,
   "height": asset.height,
+  "format": asset.format,
+  "resourceType": asset.resource_type,
+  "pages": asset.pages,
   alt,
   caption
 }`;
 
 export const muxVideoProjection = `{
-  "playbackId": asset->playbackId,
-  "status": asset->status,
+  "playbackId": asset.asset->playbackId,
+  "status": asset.asset->status,
   poster ${cloudinaryImageProjection},
   caption,
   autoplayMuted

@@ -6,6 +6,7 @@ import { CloudinaryImage } from "@/components/cloudinary";
 import {
   cloudinaryImageUrl,
   type CloudinaryPoster,
+  type CloudinaryVariant,
 } from "@/lib/cloudinary";
 
 type MuxAssetStatus = "preparing" | "ready" | "errored";
@@ -16,6 +17,9 @@ type Props = {
   poster?: CloudinaryPoster | null;
   autoplayMuted?: boolean;
   title?: string;
+  /** When true, fills a sized parent (e.g. portfolio clip tiles) instead of enforcing 16:9. */
+  fillContainer?: boolean;
+  posterVariant?: CloudinaryVariant;
 };
 
 /**
@@ -30,12 +34,20 @@ export function MuxVideoPlayer({
   poster,
   autoplayMuted = false,
   title,
+  fillContainer = false,
+  posterVariant = "hero",
 }: Props) {
-  const placeholder = poster ? cloudinaryImageUrl(poster.publicId, "hero") : undefined;
+  const placeholder = poster
+    ? cloudinaryImageUrl(poster.publicId, posterVariant)
+    : undefined;
+
+  const shellClass = fillContainer
+    ? "relative h-full w-full overflow-hidden bg-card"
+    : "relative aspect-video w-full overflow-hidden bg-card";
 
   if (status === "errored") {
     return (
-      <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-card">
+      <div className={`${shellClass} flex items-center justify-center`}>
         <p className="frame-label text-muted">Video unavailable</p>
       </div>
     );
@@ -43,9 +55,9 @@ export function MuxVideoPlayer({
 
   if (status !== "ready") {
     return (
-      <div className="relative aspect-video w-full overflow-hidden bg-card">
+      <div className={shellClass}>
         {poster ? (
-          <CloudinaryImage image={poster} variant="hero" />
+          <CloudinaryImage image={poster} variant={posterVariant} />
         ) : (
           <div className="h-full w-full bg-card" aria-hidden />
         )}
@@ -55,7 +67,7 @@ export function MuxVideoPlayer({
   }
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden bg-card">
+    <div className={shellClass}>
       <MuxPlayer
         loading="viewport"
         playbackId={playbackId}

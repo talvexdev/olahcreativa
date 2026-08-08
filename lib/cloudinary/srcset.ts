@@ -1,3 +1,4 @@
+import type { CloudinaryDeliveryMeta } from "./format";
 import { buildCloudinaryDeliveryUrl } from "./url";
 
 /**
@@ -18,8 +19,12 @@ export function cloudinarySrcSetWidths(maxWidth: number): number[] {
 }
 
 /** Server-safe responsive srcset string — no functions cross the RSC boundary. */
-export function buildCloudinarySrcSet(publicId: string, maxWidth: number): string {
+export function buildCloudinarySrcSet(
+  publicId: string,
+  maxWidth: number,
+  meta?: CloudinaryDeliveryMeta | null
+): string {
   return cloudinarySrcSetWidths(maxWidth)
-    .map((w) => `${buildCloudinaryDeliveryUrl(publicId, w)} ${w}w`)
+    .map((w) => `${buildCloudinaryDeliveryUrl(publicId, w, meta)} ${w}w`)
     .join(", ");
 }

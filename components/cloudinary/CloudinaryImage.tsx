@@ -35,8 +35,8 @@ export function CloudinaryImage({
   const maxWidth = cloudinaryMaxDeliveryWidth(image, variant);
   const { width, height } = cloudinaryImageDimensions(image, variant);
   const { sizes } = getCloudinaryVariant(variant);
-  const src = buildCloudinaryDeliveryUrl(image.publicId, maxWidth);
-  const srcSet = buildCloudinarySrcSet(image.publicId, maxWidth);
+  const src = buildCloudinaryDeliveryUrl(image.publicId, maxWidth, image);
+  const srcSet = buildCloudinarySrcSet(image.publicId, maxWidth, image);
 
   return (
     // eslint-disable-next-line @next/next/no-img-element -- Cloudinary delivers optimized srcset; next/image loader is RSC-incompatible

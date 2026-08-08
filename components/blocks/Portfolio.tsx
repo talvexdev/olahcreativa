@@ -1,7 +1,7 @@
 import { CloudinaryImage } from "@/components/cloudinary";
 import { MuxVideoPlayer } from "@/components/MuxVideoPlayer";
 import { hasCloudinaryAsset, toCloudinaryPoster } from "@/lib/cloudinary";
-import { normalizePortfolioBlock, type PortfolioProject } from "@/lib/media";
+import { normalizePortfolioBlock, type PortfolioClip, type PortfolioProject } from "@/lib/media";
 import type { BlockProps, PortfolioBlockData } from "@/lib/sanity/block-types";
 
 const RATIO = {
@@ -69,6 +69,28 @@ function PlayButton() {
   );
 }
 
+function ClipMedia({ clip, title }: { clip: PortfolioClip; title?: string }) {
+  if (clip.video?.playbackId) {
+    return (
+      <MuxVideoPlayer
+        playbackId={clip.video.playbackId}
+        status={clip.video.status}
+        poster={toCloudinaryPoster(clip.video.poster)}
+        autoplayMuted={clip.video.autoplayMuted ?? true}
+        title={title}
+        fillContainer
+        posterVariant="grid"
+      />
+    );
+  }
+
+  if (hasCloudinaryAsset(clip.image)) {
+    return <CloudinaryImage image={clip.image} variant="grid" />;
+  }
+
+  return null;
+}
+
 function ProjectCard({ project, index }: { project: PortfolioProject; index: number }) {
   const clips = project.clips ?? [];
   const gallery = project.gallery ?? [];
@@ -126,7 +148,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
                   className="rounded-xl"
                   badge={clip.label || `Clip ${String(i + 1).padStart(2, "0")}`}
                 >
-                  <CloudinaryImage image={clip.image} variant="grid" />
+                  <ClipMedia clip={clip} title={project.title} />
                 </MediaFrame>
                 {clip.caption && (
                   <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">

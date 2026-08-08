@@ -9,6 +9,11 @@ export type SanityCloudinaryImage = {
   width?: number;
   height?: number;
   caption?: string;
+  /** From Cloudinary asset metadata — used for GIF / animated delivery. */
+  format?: string;
+  resourceType?: string;
+  /** Frame count — values > 1 indicate animated GIF/WebP. */
+  pages?: number;
 };
 
 /** Minimal fields for Mux lazy placeholders and other non-Sanity consumers. */

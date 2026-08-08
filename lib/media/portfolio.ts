@@ -6,6 +6,7 @@ import { normalizeProjectedMuxVideo, type ProjectedMuxVideo } from "./mux-video"
 export type PortfolioClip = {
   label?: string;
   caption?: string;
+  video?: ProjectedMuxVideo;
   image?: SanityCloudinaryImage;
 };
 
@@ -45,10 +46,16 @@ export function normalizePortfolioProject(raw: unknown): PortfolioProject | null
         .map((clip) => {
           if (!clip || typeof clip !== "object") return null;
           const c = clip as Record<string, unknown>;
+          const video = normalizeProjectedMuxVideo(c.video);
+          const image = normalizeCloudinaryImage(c.image) ?? undefined;
+
+          if (!video?.playbackId && !image) return null;
+
           return {
             label: typeof c.label === "string" ? c.label : undefined,
             caption: typeof c.caption === "string" ? c.caption : undefined,
-            image: normalizeCloudinaryImage(c.image) ?? undefined,
+            video,
+            image,
           };
         })
         .filter(Boolean) as PortfolioClip[])

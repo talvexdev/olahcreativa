@@ -33,4 +33,6 @@ export {
 
 export { getCloudinaryPublicId, walkSanityCloudinaryImage } from "./extract";
 
+export { isAnimatedCloudinaryImage, cloudinaryDeliveryTransformOptions } from "./format";
+
 export { openGraphFromCloudinaryImage } from "./seo";

@@ -61,12 +61,9 @@ If the block has removable media on `page` documents → extend `walkPageBuilder
 |----------|---------|
 | `NEXT_PUBLIC_SANITY_*` | Sanity project + dataset |
 | `SANITY_API_READ_TOKEN` | Server read |
-| `SANITY_API_WRITE_TOKEN` | Webhooks + cron |
+| `SANITY_API_WRITE_TOKEN` | Media-cleanup webhook |
 | `SANITY_REVALIDATE_SECRET` | Webhook signature (you generate this — not from Sanity) |
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | `next-cloudinary` / delivery URLs |
-| `CLOUDINARY_API_KEY` + `CLOUDINARY_API_SECRET` | Cron Admin API delete only |
-| `MUX_TOKEN_ID` + `MUX_TOKEN_SECRET` | Cron Mux delete only |
-| `CRON_SECRET` | Vercel cron auth |
 
 Update `.env.local.example` when adding new env vars (comments only — never commit secrets).
 
@@ -77,7 +74,7 @@ Update `.env.local.example` when adding new env vars (comments only — never co
 | Cloudinary | `/studio` → Configure Cloudinary on image arrays | Cloud name + **API key only** (no secret) |
 | Mux | `/studio` → Videos → Configure plugin | Token ID + secret |
 
-**Never** put Cloudinary API secret or Mux tokens in Studio UI incorrectly — secrets in env are for **cron/server**, not editor uploads (except Mux Studio token in plugin UI).
+**Never** put Cloudinary API secret in Studio UI. Mux upload tokens belong in the Studio plugin only.
 
 ### `sanity.config.ts` — do not relax without explicit approval
 
@@ -126,6 +123,8 @@ cloudinaryImageUrl(publicId, "lightbox");
 
 Each variant defines `sizes` for responsive `srcset` — do not override per component.
 
+**Animated images (GIF, animated WebP):** upload via `cloudinaryImage`. GROQ projects `format`, `resourceType`, and `pages`; delivery uses `f_gif` or `f_auto` + `fl_animated`. Do **not** upload GIFs to Mux — use Cloudinary for GIFs and Mux for short video loops.
+
 ### GROQ
 
 ```typescript
@@ -145,6 +144,7 @@ SEO: `openGraphFromCloudinaryImage()` / `cloudinarySeoUrl()` in metadata and JSO
 - Use `@mux/mux-player-react/lazy` with `loading="viewport"` (via `MuxVideoPlayer`).
 - `preload="none"`, `capRenditionToPlayerSize`, poster URL via `cloudinaryImageUrl(..., "hero")`.
 - `autoplayMuted` only for short decorative loops — never for content with audio users should hear.
+- Portfolio clip tiles default to `autoplayMuted` when unset (silent grid previews).
 - Do not embed raw `stream.mux.com` or use `image.mux.com` for posters.
 
 Project galleries: `mapProjectMediaToGalleryItems()` from `@/lib/media/gallery`.
@@ -157,11 +157,11 @@ Project galleries: `mapProjectMediaToGalleryItems()` from `@/lib/media/gallery`.
 |--------|------------|-------------------|
 | Sanity | API usage | Server-only fetch; webhook revalidation only |
 | Cloudinary | 25 credits/mo; transforms counted once per unique derivative | Fixed variants; `quality="auto:good"` `format="auto"`; capped responsive loader |
-| Mux Free | 10 stored assets; 100K delivery min/mo | Lazy viewport player; tombstone + cron delete; Basic quality locked |
+| Mux Free | 10 stored assets; 100K delivery min/mo | Lazy viewport player; tombstone tracking; Basic quality locked |
 | Vercel | Bandwidth | Responsive `sizes`; don't over-fetch hero width on mobile |
 
 - Register new removable media in `lib/media-extract.ts`.
-- 14-day tombstone grace before permanent delete.
+- 14-day tombstone grace — editors restore in Studio; delete orphans manually in Cloudinary/Mux.
 
 ---
 
@@ -263,3 +263,4 @@ When you change a standard, edit **this file** and add a one-line note below.
 | 2026-08-08 | Initial consolidated standards (architecture, media, a11y, responsive, env) |
 | 2026-08-08 | Cloudinary delivery: `auto:good` quality + capped responsive `next/image` loader |
 | 2026-08-08 | CloudinaryImage: server-built srcSet + native `<img>` (no RSC loader / no CldImage) |
+| 2026-08-08 | Removed scheduled cron media delete — tombstones + manual vendor cleanup only |

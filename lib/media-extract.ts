@@ -69,7 +69,9 @@ export async function extractMediaAssets(
           const clips = p.clips as unknown[];
           clips?.forEach((clip) => {
             if (clip && typeof clip === "object") {
-              walkCloudinaryImage((clip as Record<string, unknown>).image);
+              const c = clip as Record<string, unknown>;
+              walkMuxVideo(c.video);
+              walkCloudinaryImage(c.image);
             }
           });
           const gallery = p.gallery as unknown[];

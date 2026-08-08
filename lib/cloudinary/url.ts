@@ -1,6 +1,8 @@
 import { getCldImageUrl } from "next-cloudinary";
 
-import { CLOUDINARY_DELIVERY, getCloudinaryVariant } from "./variants";
+import { cloudinaryDeliveryTransformOptions } from "./format";
+import { getCloudinaryVariant } from "./variants";
+import type { CloudinaryDeliveryMeta } from "./format";
 import type { CloudinaryVariant, SanityCloudinaryImage } from "./types";
 import { hasCloudinaryAsset } from "./guards";
 
@@ -19,20 +21,31 @@ export function cloudinaryMaxDeliveryWidth(
 }
 
 /** Builds a transformed Cloudinary delivery URL at an explicit width. */
-export function buildCloudinaryDeliveryUrl(publicId: string, width: number): string {
+export function buildCloudinaryDeliveryUrl(
+  publicId: string,
+  width: number,
+  meta?: CloudinaryDeliveryMeta | null
+): string {
+  const { format, flags, quality } = cloudinaryDeliveryTransformOptions(meta);
+
   return getCldImageUrl({
     src: publicId,
     width,
     crop: "limit",
-    quality: CLOUDINARY_DELIVERY.quality,
-    format: CLOUDINARY_DELIVERY.format,
+    quality,
+    format,
+    ...(flags ? { flags } : {}),
   });
 }
 
 /** Builds a delivery URL when a plain string is required (lightbox, OG fallbacks, Mux placeholders). */
-export function cloudinaryImageUrl(publicId: string, variant: CloudinaryVariant): string {
+export function cloudinaryImageUrl(
+  publicId: string,
+  variant: CloudinaryVariant,
+  meta?: CloudinaryDeliveryMeta | null
+): string {
   const { width } = getCloudinaryVariant(variant);
-  return buildCloudinaryDeliveryUrl(publicId, width);
+  return buildCloudinaryDeliveryUrl(publicId, width, meta);
 }
 
 /** Width/height for `<CloudinaryImage />` — delivery width comes from the variant; aspect ratio from Sanity when available. */

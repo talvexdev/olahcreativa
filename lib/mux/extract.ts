@@ -33,6 +33,12 @@ export function getMuxVideoAssetDocumentId(obj: unknown): string | undefined {
   const asset = (obj as Record<string, unknown>).asset as Record<string, unknown> | undefined;
   if (!asset) return undefined;
 
+  // muxVideo.asset is a `mux.video` wrapper — reference lives at asset.asset._ref
+  const nested = asset.asset as Record<string, unknown> | undefined;
+  if (typeof nested?._ref === "string" && nested._ref) {
+    return nested._ref;
+  }
+
   if (typeof asset._ref === "string" && asset._ref) {
     return asset._ref;
   }

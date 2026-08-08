@@ -17,7 +17,7 @@ export const sanityClient = createClient({
   token: process.env.SANITY_API_READ_TOKEN,
 });
 
-/** Write-enabled client for cron sweeps and webhook tombstone creation. */
+/** Write-enabled client for webhook tombstone creation. */
 export const sanityWriteClient = createClient({
   projectId,
   dataset,
