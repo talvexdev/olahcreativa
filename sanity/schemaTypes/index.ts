@@ -15,6 +15,7 @@ import ctaBlock from "./objects/blocks/ctaBlock";
 import processBlock from "./objects/blocks/process";
 import servicesBlock from "./objects/blocks/services";
 import contactBlock from "./objects/blocks/contact";
+import portfolioBlock from "./objects/blocks/portfolio";
 
 export const schemaTypes = [
   // Documents
@@ -35,4 +36,5 @@ export const schemaTypes = [
   processBlock,
   servicesBlock,
   contactBlock,
+  portfolioBlock,
 ];

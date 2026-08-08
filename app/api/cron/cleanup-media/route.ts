@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
-import Mux from "@mux/mux-node";
+import { deleteCloudinaryAsset } from "@/lib/cloudinary.server";
+import { deleteMuxAsset } from "@/lib/mux.server";
 import { sanityWriteClient } from "@/lib/sanity.client";
 import { groq } from "next-sanity";
 
@@ -37,24 +37,4 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ processed: results.length, results });
-}
-
-async function deleteCloudinaryAsset(publicId: string) {
-  cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-  const result = await cloudinary.uploader.destroy(publicId);
-  if (result.result !== "ok" && result.result !== "not found") {
-    throw new Error(`Cloudinary destroy failed: ${result.result}`);
-  }
-}
-
-async function deleteMuxAsset(assetId: string) {
-  const mux = new Mux({
-    tokenId: process.env.MUX_TOKEN_ID!,
-    tokenSecret: process.env.MUX_TOKEN_SECRET!,
-  });
-  await mux.video.assets.delete(assetId);
 }

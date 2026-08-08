@@ -1,18 +1,30 @@
+import { walkSanityCloudinaryImage } from "@/lib/cloudinary/extract";
+import { walkSanityMuxVideo } from "@/lib/mux/extract";
+
 export type MediaAsset = {
   provider: "cloudinary" | "mux";
   assetId: string;
 };
 
+type MediaAssetWithSource = MediaAsset & { sourceDocumentTitle: string };
+
+export type ExtractMediaAssetsOptions = {
+  /** Resolves `mux.videoAsset` document IDs to Mux API asset IDs. */
+  resolveMuxRefs?: (documentIds: string[]) => Promise<string[]>;
+};
+
 /**
- * Walks known document shapes (project, page, pageBuilder blocks) and collects
- * Cloudinary public_id values and Mux asset IDs for tombstone creation.
+ * Walks known document shapes (project, page, siteSettings, pageBuilder blocks)
+ * and collects Cloudinary public_id values and Mux asset IDs for tombstone creation.
  */
-export function extractMediaAssets(
+export async function extractMediaAssets(
   doc: Record<string, unknown>,
-  sourceDocumentTitle: string
-): (MediaAsset & { sourceDocumentTitle: string })[] {
-  const assets: (MediaAsset & { sourceDocumentTitle: string })[] = [];
+  sourceDocumentTitle: string,
+  options?: ExtractMediaAssetsOptions
+): Promise<MediaAssetWithSource[]> {
+  const assets: MediaAssetWithSource[] = [];
   const seen = new Set<string>();
+  const muxRefs = new Set<string>();
 
   function add(provider: "cloudinary" | "mux", assetId: string | undefined) {
     if (!assetId) return;
@@ -23,22 +35,18 @@ export function extractMediaAssets(
   }
 
   function walkCloudinaryImage(obj: unknown) {
-    if (!obj || typeof obj !== "object") return;
-    const image = obj as Record<string, unknown>;
-    const asset = image.asset as Record<string, unknown> | undefined;
-    if (asset?.public_id && typeof asset.public_id === "string") {
-      add("cloudinary", asset.public_id);
-    }
+    walkSanityCloudinaryImage(obj, (publicId) => add("cloudinary", publicId));
   }
 
   function walkMuxVideo(obj: unknown) {
     if (!obj || typeof obj !== "object") return;
-    const video = obj as Record<string, unknown>;
-    const asset = video.asset as Record<string, unknown> | undefined;
-    if (asset?.assetId && typeof asset.assetId === "string") {
-      add("mux", asset.assetId);
-    }
-    walkCloudinaryImage(video.poster);
+
+    walkSanityMuxVideo(obj, {
+      onAssetId: (assetId) => add("mux", assetId),
+      onUnresolvedRef: (documentId) => muxRefs.add(documentId),
+    });
+
+    walkCloudinaryImage((obj as Record<string, unknown>).poster);
   }
 
   function walkPageBuilder(blocks: unknown) {
@@ -46,14 +54,30 @@ export function extractMediaAssets(
     for (const block of blocks) {
       if (!block || typeof block !== "object") continue;
       const b = block as Record<string, unknown>;
-      if (b._type === "heroBlock") {
-        const media = b.media as Record<string, unknown> | undefined;
-        walkCloudinaryImage(media?.image);
-        walkMuxVideo(media?.video);
-      }
       if (b._type === "imageGridBlock") {
         const items = b.items as unknown[];
         items?.forEach(walkCloudinaryImage);
+      }
+      if (b._type === "portfolioBlock") {
+        const projects = b.projects as unknown[];
+        if (!Array.isArray(projects)) continue;
+        for (const project of projects) {
+          if (!project || typeof project !== "object") continue;
+          const p = project as Record<string, unknown>;
+          walkCloudinaryImage(p.heroImage);
+          walkMuxVideo(p.heroVideo);
+          const clips = p.clips as unknown[];
+          clips?.forEach((clip) => {
+            if (clip && typeof clip === "object") {
+              walkCloudinaryImage((clip as Record<string, unknown>).image);
+            }
+          });
+          const gallery = p.gallery as unknown[];
+          gallery?.forEach((photo) => {
+            if (!photo || typeof photo !== "object") return;
+            walkCloudinaryImage((photo as Record<string, unknown>).image);
+          });
+        }
       }
     }
   }
@@ -74,18 +98,32 @@ export function extractMediaAssets(
   walkCloudinaryImage(doc.seoImage);
   walkPageBuilder(doc.pageBuilder);
 
+  // Site settings (singleton)
+  walkCloudinaryImage(doc.logo);
+  walkCloudinaryImage(doc.defaultSeoImage);
+
+  if (muxRefs.size > 0 && options?.resolveMuxRefs) {
+    const resolved = await options.resolveMuxRefs([...muxRefs]);
+    for (const assetId of resolved) {
+      add("mux", assetId);
+    }
+  }
+
   return assets;
 }
 
 /** Returns assets in `oldDoc` that are not present in `newDoc`. */
-export function diffRemovedMedia(
+export async function diffRemovedMedia(
   oldDoc: Record<string, unknown>,
   newDoc: Record<string, unknown>,
-  sourceDocumentTitle: string
-): (MediaAsset & { sourceDocumentTitle: string })[] {
-  const oldAssets = extractMediaAssets(oldDoc, sourceDocumentTitle);
+  sourceDocumentTitle: string,
+  options?: ExtractMediaAssetsOptions
+): Promise<MediaAssetWithSource[]> {
+  const oldAssets = await extractMediaAssets(oldDoc, sourceDocumentTitle, options);
   const newKeys = new Set(
-    extractMediaAssets(newDoc, sourceDocumentTitle).map((a) => `${a.provider}:${a.assetId}`)
+    (await extractMediaAssets(newDoc, sourceDocumentTitle, options)).map(
+      (a) => `${a.provider}:${a.assetId}`
+    )
   );
   return oldAssets.filter((a) => !newKeys.has(`${a.provider}:${a.assetId}`));
 }

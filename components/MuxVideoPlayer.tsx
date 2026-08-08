@@ -1,60 +1,77 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import MuxPlayer from "@mux/mux-player-react";
-import { CloudinaryPhoto } from "./CloudinaryPhoto";
+import MuxPlayer from "@mux/mux-player-react/lazy";
+
+import { CloudinaryImage } from "@/components/cloudinary";
+import {
+  cloudinaryImageUrl,
+  type CloudinaryPoster,
+} from "@/lib/cloudinary";
+
+type MuxAssetStatus = "preparing" | "ready" | "errored";
 
 type Props = {
   playbackId: string;
-  poster?: { publicId: string; alt: string } | null;
+  status?: MuxAssetStatus;
+  poster?: CloudinaryPoster | null;
   autoplayMuted?: boolean;
+  title?: string;
 };
 
 /**
- * Lazy-mounted: the player (and its HLS manifest request) is only created
- * once the component nears the viewport — a still poster renders until then.
- * This is the design decision that keeps Mux delivered-minutes tied to real
- * engagement rather than page-load, per the free-tier architecture.
+ * Uses Mux's official lazy player (`loading="viewport"`) so HLS only loads when
+ * the clip nears the viewport. Cloudinary posters serve as placeholders — no
+ * image.mux.com requests. `capRenditionToPlayerSize` keeps delivery minutes
+ * down on smaller viewports (free-tier delivery budget).
  */
-export function MuxVideoPlayer({ playbackId, poster, autoplayMuted = false }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
+export function MuxVideoPlayer({
+  playbackId,
+  status = "ready",
+  poster,
+  autoplayMuted = false,
+  title,
+}: Props) {
+  const placeholder = poster ? cloudinaryImageUrl(poster.publicId, "hero") : undefined;
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "200px" }
+  if (status === "errored") {
+    return (
+      <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-card">
+        <p className="frame-label text-muted">Video unavailable</p>
+      </div>
     );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  }
+
+  if (status !== "ready") {
+    return (
+      <div className="relative aspect-video w-full overflow-hidden bg-card">
+        {poster ? (
+          <CloudinaryImage image={poster} variant="hero" />
+        ) : (
+          <div className="h-full w-full bg-card" aria-hidden />
+        )}
+        <p className="frame-label absolute bottom-4 left-6 text-muted">Processing video…</p>
+      </div>
+    );
+  }
 
   return (
-    <div ref={ref} className="relative aspect-video w-full overflow-hidden bg-card">
-      {inView ? (
-        <MuxPlayer
-          playbackId={playbackId}
-          streamType="on-demand"
-          autoPlay={autoplayMuted ? "muted" : false}
-          muted={autoplayMuted}
-          loop={autoplayMuted}
-          playsInline
-          defaultHiddenCaptions={false}
-          accentColor="#A9793B"
-          style={{ height: "100%", width: "100%" }}
-        />
-      ) : poster ? (
-        <CloudinaryPhoto publicId={poster.publicId} alt={poster.alt} variant="hero" />
-      ) : (
-        <div className="h-full w-full bg-card" aria-hidden />
-      )}
+    <div className="relative aspect-video w-full overflow-hidden bg-card">
+      <MuxPlayer
+        loading="viewport"
+        playbackId={playbackId}
+        streamType="on-demand"
+        placeholder={placeholder}
+        autoPlay={autoplayMuted ? "muted" : false}
+        muted={autoplayMuted}
+        loop={autoplayMuted}
+        playsInline
+        preload="none"
+        defaultHiddenCaptions={false}
+        accentColor="#A9793B"
+        capRenditionToPlayerSize
+        metadata={title ? { video_title: title } : undefined}
+        style={{ height: "100%", width: "100%" }}
+      />
     </div>
   );
 }

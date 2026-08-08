@@ -1,9 +1,8 @@
 import { BriefForm } from "@/components/BriefForm";
+import type { BlockProps, ContactBlockData, SanityLink } from "@/lib/sanity/block-types";
 
-type Link = { label?: string; href?: string };
-
-export function ContactBlock({ block }: { block: any }) {
-  const links: Link[] = Array.isArray(block.links) ? block.links : [];
+export function ContactBlock({ block }: BlockProps<ContactBlockData>) {
+  const links: SanityLink[] = Array.isArray(block.links) ? block.links : [];
 
   return (
     // The id is the anchor the CONTACTO nav link points at.

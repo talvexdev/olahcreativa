@@ -1,19 +1,17 @@
-import { CloudinaryPhoto } from "@/components/CloudinaryPhoto";
+import { CloudinaryImage } from "@/components/cloudinary";
+import { getImageGridColumnClass, normalizeImageGridItems } from "@/lib/media";
+import type { BlockProps, ImageGridBlockData } from "@/lib/sanity/block-types";
 
-const COLS: Record<string, string> = {
-  "2": "sm:grid-cols-2",
-  "3": "sm:grid-cols-2 lg:grid-cols-3",
-  "4": "sm:grid-cols-2 lg:grid-cols-4",
-};
+export function ImageGridBlock({ block }: BlockProps<ImageGridBlockData>) {
+  const items = normalizeImageGridItems(block.items);
 
-export function ImageGridBlock({ block }: { block: any }) {
   return (
     <section className="mx-auto max-w-8xl px-6 py-16">
       {block.heading && <h2 className="mb-8 font-display text-2xl text-fg">{block.heading}</h2>}
-      <div className={`grid grid-cols-1 gap-4 ${COLS[block.columns] || COLS["3"]}`}>
-        {block.items.map((img: any, i: number) => (
-          <div key={i} className="relative aspect-[4/5] overflow-hidden">
-            <CloudinaryPhoto publicId={img.publicId} alt={img.alt} variant="grid" />
+      <div className={`grid grid-cols-1 gap-4 ${getImageGridColumnClass(block.columns)}`}>
+        {items.map((image, i) => (
+          <div key={image.publicId + i} className="relative aspect-[4/5] overflow-hidden">
+            <CloudinaryImage image={image} variant="grid" />
           </div>
         ))}
       </div>

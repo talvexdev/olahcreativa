@@ -1,26 +1,11 @@
 import { groq } from "next-sanity";
 
+import { cloudinaryImageProjection, muxVideoProjection } from "@/lib/sanity/projections";
+
 /**
  * One combined query per page (not several small ones) — reduces request
  * count per build/revalidation cycle, per the free-tier-conscious design.
  */
-
-const cloudinaryImageProjection = `{
-  "publicId": asset->public_id,
-  "url": asset->url,
-  "width": asset->width,
-  "height": asset->height,
-  alt,
-  caption
-}`;
-
-const muxVideoProjection = `{
-  "playbackId": asset->playbackId,
-  "status": asset->status,
-  poster ${cloudinaryImageProjection},
-  caption,
-  autoplayMuted
-}`;
 
 export const siteSettingsQuery = groq`*[_type == "siteSettings"][0]{
   brandName,
@@ -28,7 +13,10 @@ export const siteSettingsQuery = groq`*[_type == "siteSettings"][0]{
   logo ${cloudinaryImageProjection},
   navLinks,
   contactEmail,
-  socialLinks
+  socialLinks,
+  defaultSeoTitle,
+  defaultSeoDescription,
+  defaultSeoImage ${cloudinaryImageProjection}
 }`;
 
 export const homepageProjectsQuery = groq`*[_type == "project" && featured == true] | order(order asc){
@@ -69,15 +57,40 @@ export const pageBySlugQuery = groq`*[_type == "page" && slug.current == $slug][
   pageBuilder[]{
     ...,
     _type == "heroBlock" => {
-      heading, subheading,
-      media{
-        image ${cloudinaryImageProjection},
-        video ${muxVideoProjection}
-      }
+      eyebrow,
+      heading,
+      headingAccent,
+      description,
+      ctaPrimary,
+      ctaSecondary
     },
     _type == "imageGridBlock" => {
       heading, columns,
       items[] ${cloudinaryImageProjection}
+    },
+    _type == "portfolioBlock" => {
+      eyebrow,
+      heading,
+      headingAccent,
+      description,
+      projects[]{
+        label,
+        category,
+        title,
+        description,
+        credits,
+        heroVideo ${muxVideoProjection},
+        heroImage ${cloudinaryImageProjection},
+        clips[]{
+          label,
+          caption,
+          image ${cloudinaryImageProjection}
+        },
+        gallery[]{
+          label,
+          image ${cloudinaryImageProjection}
+        }
+      }
     }
   },
   seoTitle,

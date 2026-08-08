@@ -3,25 +3,11 @@
 import { useState, useCallback } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { CldImage } from "next-cloudinary";
+
+import { CloudinaryImage } from "@/components/cloudinary";
+import { cloudinaryImageUrl } from "@/lib/cloudinary";
 import { MuxVideoPlayer } from "@/components/MuxVideoPlayer";
-
-type ImageItem = {
-  publicId: string;
-  alt: string;
-  caption?: string;
-};
-
-type VideoItem = {
-  playbackId: string;
-  poster?: { publicId: string; alt: string };
-  caption?: string;
-  autoplayMuted?: boolean;
-};
-
-type GalleryItem =
-  | ({ type: "image" } & ImageItem)
-  | ({ type: "video" } & VideoItem);
+import type { GalleryItem } from "@/lib/media/gallery";
 
 type Props = {
   items: GalleryItem[];
@@ -30,16 +16,16 @@ type Props = {
 export function ProjectGallery({ items }: Props) {
   const [lightboxIndex, setLightboxIndex] = useState(-1);
 
-  const imageItems = items.filter((i): i is { type: "image" } & ImageItem => i.type === "image");
+  const imageItems = items.filter((item): item is Extract<GalleryItem, { type: "image" }> => item.type === "image");
 
-  const slides = imageItems.map((img) => ({
-    src: `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/w_2000,q_auto,f_auto/${img.publicId}`,
-    alt: img.alt,
+  const slides = imageItems.map((item) => ({
+    src: cloudinaryImageUrl(item.image.publicId, "lightbox"),
+    alt: item.image.alt,
   }));
 
   const openLightbox = useCallback(
     (publicId: string) => {
-      const idx = imageItems.findIndex((i) => i.publicId === publicId);
+      const idx = imageItems.findIndex((item) => item.image.publicId === publicId);
       if (idx >= 0) setLightboxIndex(idx);
     },
     [imageItems]
@@ -53,25 +39,21 @@ export function ProjectGallery({ items }: Props) {
             {item.type === "video" ? (
               <MuxVideoPlayer
                 playbackId={item.playbackId}
+                status={item.status}
                 poster={item.poster}
                 autoplayMuted={item.autoplayMuted}
+                title={item.caption}
               />
             ) : (
               <button
                 type="button"
-                onClick={() => openLightbox(item.publicId)}
+                onClick={() => openLightbox(item.image.publicId)}
                 className="relative block aspect-[3/2] w-full cursor-zoom-in"
-                aria-label={`View ${item.alt} in lightbox`}
+                aria-label={`View ${item.image.alt} in lightbox`}
               >
-                <CldImage
-                  src={item.publicId}
-                  alt={item.alt}
-                  width={2000}
-                  height={1333}
-                  sizes="100vw"
-                  quality="auto"
-                  format="auto"
-                  className="h-full w-full object-cover"
+                <CloudinaryImage
+                  image={item.image}
+                  variant="hero"
                   priority={i === 0}
                 />
               </button>

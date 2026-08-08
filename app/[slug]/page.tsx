@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { sanityClient, isSanityConfigured } from "@/lib/sanity.client";
-import { pageBySlugQuery, allPageSlugsQuery } from "@/lib/queries";
 import { PageBuilder } from "@/components/PageBuilder";
+import { openGraphFromCloudinaryImage } from "@/lib/cloudinary";
 import { webPageJsonLd } from "@/lib/json-ld";
+import { pageBySlugQuery, allPageSlugsQuery } from "@/lib/queries";
+import { sanityClient, isSanityConfigured } from "@/lib/sanity.client";
+import { getPageAccessibleHeading } from "@/lib/sanity/page-heading";
 
 export async function generateStaticParams() {
   if (!isSanityConfigured()) return [];
@@ -18,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: page.seoTitle || page.title,
     description: page.seoDescription,
-    openGraph: page.seoImage ? { images: [{ url: page.seoImage.url }] } : undefined,
+    ...openGraphFromCloudinaryImage(page.seoImage),
   };
 }
 
@@ -33,12 +35,15 @@ export default async function FlexPage({ params }: { params: Promise<{ slug: str
     description: page.seoDescription,
   });
 
+  const accessibleHeading = getPageAccessibleHeading(page);
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <h1 className="sr-only">{accessibleHeading}</h1>
       <PageBuilder blocks={page.pageBuilder} />
     </>
   );

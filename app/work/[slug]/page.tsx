@@ -4,6 +4,8 @@ import { sanityClient, isSanityConfigured } from "@/lib/sanity.client";
 import { projectBySlugQuery, allProjectSlugsQuery } from "@/lib/queries";
 import { ProjectGallery } from "@/components/ProjectGallery";
 import { projectJsonLd } from "@/lib/json-ld";
+import { cloudinarySeoUrl, openGraphFromCloudinaryImage } from "@/lib/cloudinary";
+import { mapProjectMediaToGalleryItems } from "@/lib/media/gallery";
 
 export async function generateStaticParams() {
   if (!isSanityConfigured()) return [];
@@ -18,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: project.seoTitle || project.title,
     description: project.seoDescription,
-    openGraph: project.seoImage ? { images: [{ url: project.seoImage.url }] } : undefined,
+    ...openGraphFromCloudinaryImage(project.seoImage),
   };
 }
 
@@ -27,29 +29,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   const project = await sanityClient.fetch(projectBySlugQuery, { slug });
   if (!project) notFound();
 
-  const galleryItems = project.media.map((item: Record<string, unknown>) => {
-    if (item.playbackId) {
-      return {
-        type: "video" as const,
-        playbackId: item.playbackId as string,
-        poster: item.poster as { publicId: string; alt: string } | undefined,
-        caption: item.caption as string | undefined,
-        autoplayMuted: item.autoplayMuted as boolean | undefined,
-      };
-    }
-    return {
-      type: "image" as const,
-      publicId: item.publicId as string,
-      alt: item.alt as string,
-      caption: item.caption as string | undefined,
-    };
-  });
+  const galleryItems = mapProjectMediaToGalleryItems(project.media);
 
   const jsonLd = projectJsonLd({
     title: project.title,
     slug,
     description: project.seoDescription,
-    imageUrl: project.coverImage?.url,
+    imageUrl: cloudinarySeoUrl(project.coverImage),
   });
 
   return (

@@ -1,6 +1,8 @@
 import Link from "next/link";
 
-export function CtaBlock({ block }: { block: any }) {
+import type { BlockProps, CtaBlockData } from "@/lib/sanity/block-types";
+
+export function CtaBlock({ block }: BlockProps<CtaBlockData>) {
   return (
     <section className="mx-auto max-w-8xl px-6 py-24 text-center">
       <h2 className="font-display text-3xl text-fg sm:text-4xl">{block.heading}</h2>

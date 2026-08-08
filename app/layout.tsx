@@ -6,6 +6,7 @@ import { siteSettingsQuery } from "@/lib/queries";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { websiteJsonLd } from "@/lib/json-ld";
+import { openGraphFromCloudinaryImage } from "@/lib/cloudinary";
 
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -33,6 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: settings?.defaultSeoTitle || settings?.brandName || "Portfolio", template: `%s — ${settings?.brandName || "Portfolio"}` },
     description: settings?.defaultSeoDescription,
+    ...openGraphFromCloudinaryImage(settings?.defaultSeoImage),
   };
 }
 
@@ -60,7 +62,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Header brandName={settings?.brandName || "Studio"} navLinks={settings?.navLinks} />
+        <Header
+          brandName={settings?.brandName || "Studio"}
+          logo={settings?.logo}
+          navLinks={settings?.navLinks}
+        />
         <main>{children}</main>
         <Footer
           brandName={settings?.brandName || "Studio"}

@@ -1,6 +1,8 @@
 import Link from "next/link";
 
-export function HeroBlock({ block }: { block: any }) {
+import type { BlockProps, HeroBlockData } from "@/lib/sanity/block-types";
+
+export function HeroBlock({ block }: BlockProps<HeroBlockData>) {
   return (
     <section className="relative mx-auto max-w-8xl px-6 pb-24 pt-32">
       {/* Soft red bloom from the design — decorative only. */}
@@ -16,12 +18,12 @@ export function HeroBlock({ block }: { block: any }) {
         </p>
       )}
 
-      <h1 className="text-hero max-w-[15ch] text-balance font-semibold">
+      <h2 className="text-hero max-w-[15ch] text-balance font-semibold">
         {block.heading}{" "}
         {block.headingAccent && (
           <span className="text-accent">{block.headingAccent}</span>
         )}
-      </h1>
+      </h2>
 
       <div className="mt-16 flex flex-wrap items-end justify-between gap-12">
         {block.description && (

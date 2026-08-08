@@ -1,6 +1,8 @@
 import { PortableText } from "next-sanity";
 
-export function TextBlockView({ block }: { block: any }) {
+import type { BlockProps, TextBlockData } from "@/lib/sanity/block-types";
+
+export function TextBlockView({ block }: BlockProps<TextBlockData>) {
   return (
     <section className="mx-auto max-w-8xl px-6 py-16">
       <div className={block.width === "full" ? "w-full" : "mx-auto max-w-2xl"}>
