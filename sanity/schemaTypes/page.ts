@@ -37,6 +37,7 @@ export default defineType({
         { type: "processBlock" },
         { type: "servicesBlock" },
         { type: "contactBlock" },
+        { type: "portfolioBlock" },
       ],
     }),
     defineField({ name: "seoTitle", title: "SEO title", type: "string", group: "seo" }),

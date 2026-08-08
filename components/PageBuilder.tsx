@@ -6,6 +6,7 @@ import { CtaBlock } from "./blocks/Cta";
 import { ProcessBlock } from "./blocks/Process";
 import { ServicesBlock } from "./blocks/Services";
 import { ContactBlock } from "./blocks/Contact";
+import { PortfolioBlock } from "./blocks/Portfolio";
 
 /**
  * Maps each Sanity pageBuilder block type to its React component.
@@ -22,6 +23,7 @@ const BLOCKS: Record<string, React.ComponentType<{ block: any }>> = {
   processBlock: ProcessBlock,
   servicesBlock: ServicesBlock,
   contactBlock: ContactBlock,
+  portfolioBlock: PortfolioBlock,
 };
 
 export function PageBuilder({ blocks }: { blocks: any[] }) {
