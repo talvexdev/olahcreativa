@@ -1,12 +1,15 @@
 import { defineType, defineField } from "sanity";
 
+import { anchorIdField } from "../anchorId";
+
 /**
  * Timeline section — the steps are scrubbed by a playhead that follows the
  * reader's scroll, so the order of `steps` is the order of playback.
+ * Default in-page anchor: #proceso.
  */
 export default defineType({
   name: "processBlock",
-  title: "Proceso (línea de tiempo)",
+  title: "Proceso",
   type: "object",
   fields: [
     defineField({
@@ -67,6 +70,7 @@ export default defineType({
         },
       ],
     }),
+    anchorIdField,
   ],
   preview: {
     select: { title: "heading", subtitle: "eyebrow" },

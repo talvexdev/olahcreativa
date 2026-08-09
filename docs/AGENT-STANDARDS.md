@@ -1,7 +1,7 @@
 # Agent standards — olahcreativa
 
 > **Single source of truth.** Edit this file only.  
-> Cursor (`.cursor/rules/`), `AGENTS.md`, and `CLAUDE.md` point here — do not duplicate content elsewhere.
+> Cursor (`.cursor/rules/`), `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` point here — do not duplicate standards elsewhere.
 
 Stack: **Next.js 16 App Router** · **Sanity Studio v6** (`/studio`) · **Cloudinary** (images) · **Mux** (video) · **Tailwind CSS v4** · **Vercel**
 
@@ -11,70 +11,279 @@ Human setup (env, webhooks, accounts): see `README.md`.
 
 ## 1. Architecture & principles (SOLID / DRY)
 
-- **Single responsibility**: blocks render one section; mappers live in `lib/`; server-only clients in `*.server.ts`.
+- **Single responsibility**: blocks render one section; mappers live in `lib/`; Sanity client in `lib/sanity/client.ts`.
 - **Open/closed**: extend via new block types + registry entries — avoid editing unrelated modules.
-- **DRY**: one GROQ projection (`lib/sanity/projections.ts`), one image component (`components/cloudinary/CloudinaryImage.tsx`), shared mappers (`lib/media/`). Never duplicate transform widths or projection strings.
+- **DRY**: one GROQ projection (`lib/sanity/projections.ts`), one image component (`components/media/cloudinary/CloudinaryImage.tsx`), shared mappers (`lib/page-builder/`). Seed copy lives once in `sanity/lib/page-seed.ts`. Never duplicate transform widths or projection strings.
 - **Minimal diffs**: match existing naming, imports, and comment style. No drive-by refactors.
 - **Server-first data**: Sanity fetches on the server only. No client-side GROQ. On-demand revalidation via webhook — **never** add `revalidate: N` interval polling.
+
+### Language
+
+| Surface | Language |
+|---------|----------|
+| File names, `_type` / schema `name`, code identifiers, code comments | **English** |
+| Studio document/field `title`s, descriptions, structure UI, on-site UI copy, form messages, seed copy | **Spanish** |
+
+Examples: `_type: "heroBlock"` + file `Hero.tsx`, Studio title **"Portada"**.
+
+### Folder layout
+
+```text
+app/                            # routes + API only
+  page.tsx                      # /  ← homepage singleton
+  portfolio/page.tsx            # /portfolio
+  work/[slug]/page.tsx         # project detail
+  studio/…                      # embedded Sanity
+  api/revalidate|webhooks/…
+
+components/
+  site/                         # Header, HeaderShell, SiteNav, Footer, SocialIcon, ThemeToggle
+  media/                        # cloudinary/, MuxVideoPlayer, ProjectGallery
+  forms/                        # BriefForm
+  page-builder/                 # PageBuilder, CmsPage, blocks/*
+
+lib/
+  sanity/                       # client, queries, projections, block-types, page-slugs, page-heading
+  cloudinary/                   # delivery (variants, urls, srcset) — keep top-level
+  mux/                          # Mux extract helpers — keep top-level
+  page-builder/                 # anchors, hero/portfolio/image-grid normalizers
+  site/                         # social platform ids/labels (footer icons)
+  media-cleanup/                # tombstone extract helpers
+  actions/                      # server actions (contact)
+  json-ld.ts
+
+scripts/
+  seed-pages.ts                 # local CLI seed (not an HTTP route)
+
+sanity/                         # Studio-only
+  schemaTypes/
+    documents/                  # page, project, siteSettings, mediaTombstone
+    objects/
+      blocks/                   # English filenames matching _type
+      anchorId.ts               # shared optional section anchor field
+      cloudinaryImage.ts, muxVideo.ts, link.ts
+  lib/                          # structure.ts, templates.ts, page-seed.ts, tombstoneActions.ts
+sanity.config.ts
+```
+
+Do **not** nest `lib/cloudinary` or `lib/mux` under `lib/media`. Do **not** add free-form CMS routes like `app/[slug]` for pages.
 
 ### Key paths
 
 | Concern | Path |
 |---------|------|
-| Cloudinary infra | `lib/cloudinary/` |
-| GROQ projections | `lib/sanity/projections.ts` |
-| Gallery mapping | `lib/media/gallery.ts` |
-| Image component | `components/cloudinary/CloudinaryImage.tsx` |
-| Video component | `components/MuxVideoPlayer.tsx` |
-| Block registry | `components/PageBuilder.tsx` |
-| Media cleanup | `lib/media-extract.ts` |
-| Design tokens | `app/globals.css` (`@theme`, CSS variables) |
+| Sanity client / queries | `lib/sanity/client.ts`, `lib/sanity/queries.ts` |
+| Page ids / public paths | `lib/sanity/page-slugs.ts` |
+| Block types | `lib/sanity/block-types.ts` |
+| Section anchors | `lib/page-builder/anchors.ts` + `sanity/schemaTypes/objects/anchorId.ts` |
+| Block normalizers | `lib/page-builder/` |
+| Block registry | `components/page-builder/PageBuilder.tsx` |
+| Shared CMS page render | `components/page-builder/CmsPage.tsx` |
+| Header / nav | `components/site/Header.tsx`, `SiteNav.tsx`, `HeaderShell.tsx` |
+| Footer / social icons | `components/site/Footer.tsx`, `SocialIcon.tsx`, `lib/site/social.ts` |
+| Seed payloads | `sanity/lib/page-seed.ts` |
+| Seed CLI | `scripts/seed-pages.ts` → `npm run seed:pages` |
+| Page templates | `sanity/lib/templates.ts` (imports `page-seed`) |
+| Image / video | `components/media/cloudinary/CloudinaryImage.tsx`, `MuxVideoPlayer.tsx` |
+| Design tokens | `app/globals.css` (`@theme`, CSS variables, `--site-header-height`) |
 
 ---
 
-## 2. Page-builder modules (checklist)
+## 2. Fixed pages & templates
 
-Adding a block requires **four coordinated changes**:
+Exactly **two** CMS pages — Studio **singletons** (not a document list create flow):
+
+| Studio label | Document id | Public route | Template id |
+|---|---|---|---|
+| Inicio (/) | `homepage` | `/` (`app/page.tsx`) | `page-homepage` |
+| Portafolio (/portfolio) | `pagePortfolio` | `/portfolio` (`app/portfolio/page.tsx`) | `page-portfolio` |
+
+Constants: `HOME_PAGE_ID` / `PORTFOLIO_PAGE_ID` in `lib/sanity/page-slugs.ts`. Fetch with `pageByIdQuery`.
+
+- **No page slug field** — routes are App Router files + document ids.
+- **No** free-form page templates, blank “Page” create, or catch-all `/[slug]` for CMS pages.
+- Templates: `sanity/lib/templates.ts` (values from `page-seed.ts`). Structure: `sanity/lib/structure.ts` (Spanish nav labels).
+- Shared render: `CmsPage` → `PageBuilder`. Until a singleton is published, its route 404s.
+
+### Seeded module order
+
+| Page | `pageBuilder` order |
+|------|---------------------|
+| Inicio | Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto |
+| Portafolio | Portafolio → Contacto (editors may insert more `portfolioBlock`s below the first) |
+
+`_type` chain (Inicio): `heroBlock` → `aboutBlock` → `servicesBlock` → `workCtaBlock` → `processBlock` → `contactBlock`.
+
+Portafolio is **not** part of the Inicio seed.
+
+---
+
+## 3. Seeding (`npm run seed:pages`)
+
+- **Payloads:** `sanity/lib/page-seed.ts` — single source for Studio templates + CLI.
+- **Script:** `scripts/seed-pages.ts` (local only; loads `.env.local`).
+- **Seeds:** `siteSettings` (header/footer/nav/social) + `homepage` + `pagePortfolio`.
+- **Guards:** require project id, dataset, `SANITY_API_WRITE_TOKEN` (`sk…`); skip if published/draft exists unless `--force`; `--dry-run` prints only; `--force` replaces published and deletes matching drafts.
+- **No media in seed:** Mux/Cloudinary assets, logos, and portfolio projects are added in the CMS editor.
+- **Do not** expose seeding as a public API route or cron.
+
+```bash
+npm run seed:pages              # create if missing
+npm run seed:pages -- --dry-run
+npm run seed:pages -- --force   # overwrite (use deliberately)
+```
+
+---
+
+## 4. Site chrome — header, footer, navigation
+
+Header/footer are **global** (`siteSettings` + `app/layout.tsx`), not page-builder modules.
+
+### Brand fallback
+
+If `brandName` is missing, UI falls back to **"Olah Creativa"** — never a generic “Studio” label.
+
+### Header height & full-viewport sections
+
+- `HeaderShell` measures the sticky header and sets `--site-header-height` on `:root` (updates on resize/orientation).
+- CSS fallback: `--site-header-height: 4.5rem` in `globals.css`.
+- `html { scroll-padding-top: var(--site-header-height); }` for hash links under the sticky bar.
+- Put section `id`s on the **outer module** (`<section>`) so hash nav includes top spacing; `scroll-padding-top` clears the sticky header.
+- `SiteNav` manually `scrollIntoView`s same-page hash clicks (Next may not re-scroll).
+- Portada (and any full-viewport module) uses `min-height: calc(100dvh - var(--site-header-height))` with a `100vh` fallback — **do not** hardcode rem guesses for header height.
+
+### Navigation (curated, flat)
+
+- Editors manage links in **Ajustes del sitio → Enlaces de navegación** (label + href).
+- Keep a **short flat list** (about 4–6 items). Prefer hash links to Inicio sections and a route to `/portfolio`.
+- **Default seed nav:** Inicio `/` · Quiénes somos `/#nosotros` · Servicios `/#servicios` · Proceso `/#proceso` · Portafolio `/portfolio` · Contacto `/#contacto`.
+- **Do not** auto-build the header from every page-builder block.
+- **Do not** add nested submenus for repeated modules by default. If a second Portafolio block must be reachable, give it a distinct **Ancla (URL)** and optionally add one curated nav link — only when the destination is meaningfully different.
+- `SiteNav` (`components/site/SiteNav.tsx`): scroll-spy highlights same-page hash targets with `text-accent` + `aria-current`; page routes activate by pathname.
+
+### Section anchors
+
+- Navigable sections use `resolveSectionId()` from `lib/page-builder/anchors.ts`.
+- Optional CMS field **Ancla (URL)** (`anchorId` via shared `anchorIdField`) on: Quiénes somos, Servicios, Proceso, Contacto, Portafolio.
+- Defaults: `nosotros`, `servicios`, `proceso`, `contacto`, `portafolio`.
+- Repeated Portafolio modules without a custom ancla get a uniquified id (`portafolio-{key}`). First Portafolio in seed sets `anchorId: "portafolio"`.
+- Anclas: lowercase, numbers, hyphens only (`portafolio-eventos`).
+
+### Footer social icons
+
+- Platforms are a **fixed list** in `lib/site/social.ts` (instagram, facebook, youtube, tiktok, linkedin, x, whatsapp, vimeo).
+- Studio: dropdown + URL; reorder/add/remove in Ajustes del sitio.
+- Render: inline SVGs with `currentColor` (`SocialIcon`), icon buttons with `aria-label`, theme hover (`hover:bg-wash hover:text-accent`).
+- **Do not** add a heavy icon pack for brand marks; extend `lib/site/social.ts` + `SocialIcon.tsx` together when adding a network.
+- Unknown/legacy platform strings may fall back to text; prefer the dropdown values.
+
+---
+
+## 5. Page-builder modules (checklist)
+
+Studio labels Spanish; code/files/`_type` English:
+
+| Studio title | `_type` | Schema | Component | Default anchor |
+|---|---|---|---|---|
+| Portada | `heroBlock` | `hero.ts` | `Hero.tsx` | — (first viewport) |
+| Quiénes somos | `aboutBlock` | `about.ts` | `About.tsx` | `nosotros` |
+| Servicios | `servicesBlock` | `services.ts` | `Services.tsx` | `servicios` |
+| Más trabajos | `workCtaBlock` | `workCta.ts` | `WorkCta.tsx` | — (bridge CTA) |
+| Proceso | `processBlock` | `process.ts` | `Process.tsx` | `proceso` |
+| Contacto | `contactBlock` | `contact.ts` | `Contact.tsx` | `contacto` |
+| Portafolio | `portfolioBlock` | `portfolio.ts` | `Portfolio.tsx` | `portafolio` |
+| Texto | `textBlock` | `textBlock.ts` | `TextBlock.tsx` | — |
+| Galería | `imageGridBlock` | `imageGrid.ts` | `ImageGrid.tsx` | — |
+| Testimonio | `testimonialBlock` | `testimonialBlock.ts` | `Testimonial.tsx` | — |
+| Llamada a la acción | `ctaBlock` | `ctaBlock.ts` | `Cta.tsx` | — |
+
+**Más trabajos** (`workCtaBlock`) ≠ centered **Llamada a la acción** (`ctaBlock`).
+
+### Adding a block (coordinated changes)
 
 1. **Schema** — `sanity/schemaTypes/objects/blocks/myBlock.ts` + export in `schemaTypes/index.ts`
-2. **Page allow-list** — `{ type: "myBlock" }` in `sanity/schemaTypes/page.ts` → `pageBuilder.of[]`
-3. **GROQ** — extend `pageBySlugQuery` in `lib/queries.ts` (import from `lib/sanity/projections.ts`)
-4. **Renderer** — `components/blocks/MyBlock.tsx` + key in `PageBuilder.tsx` `BLOCKS` map
+2. **Page allow-list** — `{ type: "myBlock" }` in `documents/page.ts` → `pageBuilder.of[]`
+3. **GROQ** — extend `pageProjection` in `lib/sanity/queries.ts` (use `projections.ts` for media)
+4. **Renderer** — `blocks/MyBlock.tsx` + `BLOCK_TYPES` / switch in `PageBuilder.tsx` + type in `block-types.ts`
+5. **Seed/template** — update `page-seed.ts` if the block belongs on Inicio/Portafolio by default
+6. **Anchors** — if the block is a nav target, use `anchorIdField` + `resolveSectionId` + document the default id
+7. **Media cleanup** — if it holds removable media, extend `walkPageBuilder` in `lib/media-cleanup/extract.ts`
 
-Block `_type` / schema `name` / registry key must match exactly.
+`_type` / schema `name` / registry key must match exactly.
 
-- Reuse `cloudinaryImage`, `muxVideo`, `link` objects — no parallel media types.
-- Spanish Studio labels OK; internal `name` values in camelCase English.
-- Blocks receive `{ block }`; normalize Sanity data with `normalizeCloudinaryImage()` or block-specific normalizers in `lib/`.
-- Prefer **Server Components**; add `"use client"` only for interactivity (lightbox, theme toggle, video player wrapper).
-- Use theme tokens (`frame-label`, `text-accent`, `bg-card`, `max-w-8xl`, `px-6`) — no one-off hex colors.
+### Module rules
 
-If the block has removable media on `page` documents → extend `walkPageBuilder` in `lib/media-extract.ts`.
+- Reuse `cloudinaryImage`, `muxVideo`, `link` — no parallel media types.
+- Field `name`s English camelCase; Studio field `title`s / descriptions Spanish.
+- Blocks receive `{ block }`; normalize with `normalizeCloudinaryImage()` or `lib/page-builder/` helpers.
+- Prefer **Server Components**; `"use client"` only for interactivity (scroll scrub, forms, theme, video, nav scroll-spy).
+- Theme tokens only (`frame-label`, `text-accent`, `bg-card`, `bg-surface`, `bg-wash`, `border-line`, `text-muted`, `max-w-8xl`, `px-6`) — no one-off hex in features.
+- Incomplete blocks **return `null`** (missing required heading, empty lists, empty portable text).
+- Removable media on `page` → extend `walkPageBuilder`.
 
 ---
 
-## 3. Environment & credentials
+## 6. Module layout conventions
 
-### `.env.local` / Vercel (server + Next.js delivery)
+### Portada (`heroBlock`)
+
+- Fills the first viewport under the sticky header (`100dvh` − `--site-header-height`); use `min-height`, not a fixed height, so mobile content can grow.
+- Optional `showcaseClips` (max 3, Mux + Cloudinary poster or image). **No** highlight/stat card in Portada.
+- Heading is `<h2>` — the page’s single accessible `<h1>` stays the `CmsPage` sr-only heading.
+- CTAs stack full-width on small screens.
+
+### Más trabajos (`workCtaBlock`)
+
+- **Bridge** between Servicios and Proceso: no full `py-28`, and **no negative margins** (they overlap neighbors and break hash scroll / scroll-spy).
+- Neighbors own the gap: Servicios `pt-28 pb-12`, Proceso `pt-12 pb-28`; the CTA sits in that space with no extra vertical padding of its own.
+- External `http(s)` → `target="_blank"`; `mailto:` / `tel:` same tab; `/` and `#` → Next `Link`.
+
+### Servicios
+
+- Typical seed: **4** cards in 2×2 on large screens (`columnsFor(4) === 2`).
+- Badges like “Servicio principal” / “Servicio complementario” (not only PLANO 01…).
+- When followed by Más trabajos: use `pt-28 pb-12` (not symmetric `py-28`).
+
+### Contacto + BriefForm
+
+- Two-column layout on large screens: copy + links | form card.
+- Contact links: underline via `border-b border-line`, hover `border-accent` / `text-accent` (light/dark safe).
+- Form: BRIEF RÁPIDO pattern — name, empresa, correo, interest chips, message, full-width submit.
+- Delivery via Resend + `CONTACT_TO_EMAIL` (not editable in CMS).
+
+### Theme / color
+
+- Tokens in `app/globals.css`: light defaults + `.dark` overrides (`--bg`, `--surface`, `--card`, `--fg`, `--muted`, `--line`, `--accent`, `--wash`).
+- Brand accent is red (`--accent`); do not introduce purple/glow/default AI themes.
+- Icons and UI chrome must use tokens / `currentColor`, not hardcoded light-only greys.
+
+---
+
+## 7. Environment & credentials
+
+### `.env.local` / Vercel
 
 | Variable | Purpose |
 |----------|---------|
 | `NEXT_PUBLIC_SANITY_*` | Sanity project + dataset |
 | `SANITY_API_READ_TOKEN` | Server read |
-| `SANITY_API_WRITE_TOKEN` | Media-cleanup webhook |
-| `SANITY_REVALIDATE_SECRET` | Webhook signature (you generate this — not from Sanity) |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | `next-cloudinary` / delivery URLs |
+| `SANITY_API_WRITE_TOKEN` | Media-cleanup webhook + local `npm run seed:pages` |
+| `SANITY_REVALIDATE_SECRET` | Webhook signature (you generate — not from Sanity) |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Delivery URLs |
+| `RESEND_API_KEY` / `CONTACT_TO_EMAIL` | Contact/brief form (`contactBlock`) |
+| `CONTACT_FROM_EMAIL` | Optional verified sender; else `onboarding@resend.dev` |
+| `NEXT_PUBLIC_SITE_URL` | Sitemap, robots, JSON-LD |
 
-Update `.env.local.example` when adding new env vars (comments only — never commit secrets).
+Update `.env.local.example` when adding vars (comments only — never commit secrets).
 
-### Studio (upload paths — stored in Sanity dataset, not env)
+### Studio uploads (stored in dataset, not env)
 
-| Service | Where configured | What to enter |
-|---------|------------------|---------------|
-| Cloudinary | `/studio` → Configure Cloudinary on image arrays | Cloud name + **API key only** (no secret) |
+| Service | Where | What |
+|---------|-------|------|
+| Cloudinary | `/studio` → Configure Cloudinary on image arrays | Cloud name + **API key only** |
 | Mux | `/studio` → Videos → Configure plugin | Token ID + secret |
 
-**Never** put Cloudinary API secret in Studio UI. Mux upload tokens belong in the Studio plugin only.
+**Never** put Cloudinary API secret in Studio. Mux upload tokens stay in the Studio plugin.
 
 ### `sanity.config.ts` — do not relax without explicit approval
 
@@ -90,40 +299,39 @@ muxInput({
 })
 ```
 
+Page templates: only `page-homepage` and `page-portfolio`. Hide blank page create — edit via structure singletons.
+
 ---
 
-## 4. Images — Cloudinary (required)
+## 8. Images — Cloudinary (required)
 
 ### Rules
 
-- All photos/posters → Sanity `cloudinaryImage` → `<CloudinaryImage />`.
+- All photos/posters → Sanity `cloudinaryImage` → `<CloudinaryImage />` from `@/components/media/cloudinary`.
 - **Never** use `CldImage`, hardcoded `res.cloudinary.com` URLs, or inline widths in feature code.
-- **`CloudinaryImage` is a Server Component.** It renders a native `<img>` with server-built `src` + `srcSet` strings from `lib/cloudinary/srcset.ts`.
-- **Do not** pass `next/image` `loader` functions from Server Components — Next.js 16 treats `next/image` as a Client boundary and functions are not serializable (runtime error).
-- **Do not** use `CldImage` / `CldUploadWidget` / other `next-cloudinary` React components in feature code — they use client hooks and may inject `<script>` tags (React 19 runtime error). URL helpers (`getCldImageUrl`, `buildCloudinaryDeliveryUrl`) are fine in `lib/cloudinary/`.
+- **`CloudinaryImage` is a Server Component** — native `<img>` with server-built `src` / `srcSet` from `lib/cloudinary/srcset.ts`.
+- **Do not** pass `next/image` `loader` functions from Server Components (not serializable).
+- **Do not** use `next-cloudinary` React upload/display components in the public app — Studio plugin only.
 
 ```tsx
-import { CloudinaryImage } from "@/components/cloudinary";
+import { CloudinaryImage } from "@/components/media/cloudinary";
 import { normalizeCloudinaryImage, cloudinaryImageUrl } from "@/lib/cloudinary";
 
 <CloudinaryImage image={normalizeCloudinaryImage(block.photo)} variant="grid" />
-// Plain URL only when required (lightbox, Mux placeholder):
-cloudinaryImageUrl(publicId, "lightbox");
+cloudinaryImageUrl(publicId, "lightbox"); // lightbox / Mux placeholder only
 ```
 
-### Variants (add new sizes **only** in `lib/cloudinary/variants.ts`)
+### Variants (add sizes **only** in `lib/cloudinary/variants.ts`)
 
 | Variant | Width | Typical use |
 |---------|-------|-------------|
-| `thumbnail` | 400 | Small thumbs |
-| `grid` | 800 | Grids, clip tiles |
+| `thumbnail` | 400 | Small thumbs, logo |
+| `grid` | 800 | Grids, clip tiles, hero showcase |
 | `portrait` | 640 | Horizontal gallery strip |
 | `hero` | 1920 | Full-width heroes |
 | `lightbox` | 2000 | Lightbox / zoom |
 
-Each variant defines `sizes` for responsive `srcset` — do not override per component.
-
-**Animated images (GIF, animated WebP):** upload via `cloudinaryImage`. GROQ projects `format`, `resourceType`, and `pages`; delivery uses `f_gif` or `f_auto` + `fl_animated`. Do **not** upload GIFs to Mux — use Cloudinary for GIFs and Mux for short video loops.
+**Animated images (GIF, animated WebP):** Cloudinary only — not Mux.
 
 ### GROQ
 
@@ -131,135 +339,154 @@ Each variant defines `sizes` for responsive `srcset` — do not override per com
 import { cloudinaryImageProjection, muxVideoProjection } from "@/lib/sanity/projections";
 ```
 
-Types: `SanityCloudinaryImage`, `CloudinaryPoster` from `@/lib/cloudinary`.
-
-SEO: `openGraphFromCloudinaryImage()` / `cloudinarySeoUrl()` in metadata and JSON-LD.
+Types: `SanityCloudinaryImage`, `CloudinaryPoster` from `@/lib/cloudinary`.  
+SEO: `openGraphFromCloudinaryImage()` / `cloudinarySeoUrl()`.
 
 ---
 
-## 5. Video — Mux (required)
+## 9. Video — Mux (required)
 
-- All video → Sanity `muxVideo` → `<MuxVideoPlayer />`.
-- **Every** `muxVideo` must include a **Cloudinary poster** (`cloudinaryImage`) — required in schema.
-- Use `@mux/mux-player-react/lazy` with `loading="viewport"` (via `MuxVideoPlayer`).
-- `preload="none"`, `capRenditionToPlayerSize`, poster URL via `cloudinaryImageUrl(..., "hero")`.
-- `autoplayMuted` only for short decorative loops — never for content with audio users should hear.
-- Portfolio clip tiles default to `autoplayMuted` when unset (silent grid previews).
+- All video → Sanity `muxVideo` → `<MuxVideoPlayer />` from `@/components/media/MuxVideoPlayer`.
+- **Every** `muxVideo` needs a **Cloudinary poster** (required in schema).
+- Use `@mux/mux-player-react/lazy` with `loading="viewport"` via `MuxVideoPlayer`.
+- `preload="none"`, `capRenditionToPlayerSize`, poster via Cloudinary.
+- `autoplayMuted` only for short decorative loops (hero showcase / portfolio tiles).
 - Do not embed raw `stream.mux.com` or use `image.mux.com` for posters.
 
-Project galleries: `mapProjectMediaToGalleryItems()` from `@/lib/media/gallery`.
+Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-builder`.
 
 ---
 
-## 6. Free-tier performance (Cloudinary + Mux + Sanity)
+## 10. Free-tier performance (Cloudinary + Mux + Sanity)
 
-| Vendor | Constraint | Mitigation in code |
-|--------|------------|-------------------|
-| Sanity | API usage | Server-only fetch; webhook revalidation only |
-| Cloudinary | 25 credits/mo; transforms counted once per unique derivative | Fixed variants; `quality="auto:good"` `format="auto"`; capped responsive loader |
-| Mux Free | 10 stored assets; 100K delivery min/mo | Lazy viewport player; tombstone tracking; Basic quality locked |
-| Vercel | Bandwidth | Responsive `sizes`; don't over-fetch hero width on mobile |
+| Vendor | Constraint | Mitigation |
+|--------|------------|------------|
+| Sanity | API usage | Server-only fetch; webhook revalidation only; seed is local CLI |
+| Cloudinary | Transform credits | Fixed variants; `auto:good` / `auto` format |
+| Mux Free | Assets + delivery minutes | Lazy viewport player; tombstones; Basic quality locked |
+| Vercel | Bandwidth | Responsive `sizes`; don’t over-fetch hero on mobile |
 
-- Register new removable media in `lib/media-extract.ts`.
-- 14-day tombstone grace — editors restore in Studio; delete orphans manually in Cloudinary/Mux.
-
----
-
-## 7. Responsive UI / UX
-
-### Breakpoints (Tailwind defaults — mobile-first)
-
-| Prefix | Min width | Use |
-|--------|-----------|-----|
-| (none) | 0 | Mobile base styles |
-| `sm:` | 640px | Large phones / small tablets |
-| `md:` | 768px | Tablets |
-| `lg:` | 1024px | Laptops |
-| `xl:` | 1280px | Desktops |
-| `2xl:` | 1536px | Large desktops |
-
-**Always mobile-first**: base layout for small screens, add `sm:` / `md:` / `lg:` enhancements.
-
-### Layout conventions (this project)
-
-- Page gutter: `px-6`; max content width: `max-w-8xl` (96rem) centered.
-- Section vertical rhythm: `py-16`–`py-28` for blocks; consistent gap scales (`gap-4`, `gap-8`, `space-y-16`).
-- Typography: `text-hero` uses `clamp()` — prefer clamp/fluid type over fixed px for headings.
-- Grids: `grid-cols-1` → `sm:grid-cols-2` → `lg:grid-cols-3/4` (see `ProjectGrid`, `ImageGrid`, Portfolio clips).
-
-### Touch & spacing
-
-- Minimum tap targets ~44×44px for primary controls (buttons, gallery scroll areas).
-- Horizontal scroll galleries: `snap-x snap-mandatory`, `overflow-x-auto`, visible focus ring on container (`focus-visible:outline-accent`).
-
-### Responsive images (performance + layout)
-
-- **Always** wrap images in aspect-ratio containers (`aspect-video`, `aspect-[3/4]`, `aspect-[4/5]`) to prevent CLS.
-- Use `<CloudinaryImage variant="…" />` — it applies variant `sizes` automatically.
-- `priority={true}` only for **LCP candidates** (first visible hero / first 1–3 grid tiles above fold) — not every image.
-- Pick variant by **layout slot**, not by guessing pixel width:
-  - Full bleed → `hero`
-  - Grid cell → `grid`
-  - Narrow strip tile → `portrait` or `thumbnail`
-  - Lightbox → `lightbox`
-
-### Responsive video
-
-- Container: `aspect-video w-full overflow-hidden` (or project `MediaFrame` pattern).
-- Lazy mount at viewport — never load HLS for off-screen clips.
-- Hero overlay text: gradient scrim (`from-bg via-bg/80`) so titles stay readable on any frame.
-- On narrow viewports, avoid multiple simultaneous autoplay videos — one muted hero max.
-
-### Motion
-
-- `prefers-reduced-motion: reduce` is handled globally in `globals.css` — don't add animations that bypass it.
-- Hover transforms (`group-hover:scale-105`) are fine; avoid auto-playing carousels.
+- Register removable media in `lib/media-cleanup/extract.ts` (including Portada `showcaseClips`).
+- 14-day tombstone grace — restore in Studio; delete orphans manually in vendor consoles.
 
 ---
 
-## 8. Accessibility (required)
+## 11. Responsive UI / UX
 
-- **Alt text** required on every `cloudinaryImage` (schema validation).
-- Decorative elements: `aria-hidden="true"`.
-- `<button type="button">` for actions; `<Link>` for navigation.
-- Horizontal scroll: `tabIndex={0}`, `role="region"`, descriptive `aria-label`.
-- Preserve `:focus-visible` outlines (`globals.css` — do not remove).
-- Icon-only buttons: `aria-label`; SVG icons `aria-hidden`.
-- One `<h1>` per page; block titles use `<h2>`+ without skipping levels.
-- Landmarks: `<main>`, `<section>`, `<article>`, `<nav>`, `<header>`, `<footer>`.
-- Don't convey information by color alone — pair with text/icons.
+### Breakpoints (Tailwind — mobile-first)
+
+| Prefix | Min width |
+|--------|-----------|
+| (none) | 0 |
+| `sm:` | 640px |
+| `md:` | 768px |
+| `lg:` | 1024px |
+| `xl:` | 1280px |
+| `2xl:` | 1536px |
+
+### Layout conventions
+
+- Gutter `px-6`; max width `max-w-8xl` centered.
+- Full section rhythm `py-16`–`py-28`; **bridge** modules (Más trabajos) sit in reduced neighbor padding (`pb-12` / `pt-12`) — don’t stack three `py-28`s and don’t use negative margins.
+- Typography: prefer `text-hero` / clamp for display headings.
+- Grids: `grid-cols-1` → `sm:grid-cols-2` → `lg:grid-cols-3/4`; Servicios with 4 cards → 2×2.
+- Full-viewport heroes: `svh`/`dvh` + measured `--site-header-height`; allow growth on small screens (`min-h`, not fixed `h`).
+
+### Touch, images, video, motion
+
+- Tap targets ~44×44px for primary controls (including footer social icons).
+- Horizontal scroll: `snap-x snap-mandatory`, `overflow-x-auto`, focus-visible ring.
+- Always aspect-ratio wrappers to prevent CLS; use `<CloudinaryImage variant="…" />`.
+- `priority={true}` only for LCP candidates.
+- Video: `aspect-video` on small screens; one muted autoplay max on small viewports when possible.
+- Respect `prefers-reduced-motion` (global in `globals.css`).
+
+---
+
+## 12. Accessibility (required)
+
+- Alt text required on every `cloudinaryImage`.
+- Decorative: `aria-hidden="true"`.
+- `<button type="button">` for actions; `<Link>` / `<a>` for navigation.
+- Icon-only controls: `aria-label`; SVGs `aria-hidden`.
+- One accessible `<h1>` per CMS page (`CmsPage` sr-only via `getPageAccessibleHeading`); **block titles stay `<h2>`+** (including Portada).
+- Landmarks: `<main>`, `<section>`, `<nav aria-label="Principal">`, `<header>`, `<footer>`.
+- Active nav: `aria-current="page"` when highlighted.
+- Don’t convey meaning by color alone (pair accent with underline/weight where needed).
+- Keep `:focus-visible` outlines from `globals.css`.
 
 ### Block ship checklist
 
-- [ ] All images have alt
-- [ ] Video has poster + alt; processing/error states visible
-- [ ] Keyboard reachable interactive elements
-- [ ] Heading hierarchy correct
-- [ ] Responsive down to 320px width without horizontal page scroll (except intentional scroll regions)
+- [ ] Images have alt
+- [ ] Video has poster + visible processing/error states
+- [ ] Keyboard-reachable interactive elements
+- [ ] Heading hierarchy correct (no extra visible `<h1>`)
+- [ ] Section `id` unique on the page when the block can repeat
+- [ ] Usable at 320px width without unintended horizontal page scroll
+- [ ] Light **and** dark mode checked with theme tokens
 
 ---
 
-## 9. Do not
+## 13. Guidelines to always follow (new / reinforced)
 
-- Inline `CldImage`, `CldUploadWidget`, or manual Cloudinary URLs in feature code
-- Pass `next/image` `loader` or any function props from Server Components into Client Components
-- Add `next-cloudinary` React components outside `/studio` (Sanity plugin handles uploads there)
-- Embed raw `stream.mux.com` or use `image.mux.com` for posters
-- Add `revalidate: N` polling intervals
-- Store Cloudinary API secret in Studio UI
-- Enable Mux Plus/Premium, DRM, static MP4, or 4K without explicit approval
-- Skip `lib/media-extract.ts` when adding removable CMS media
-- Invent breakpoints or image widths outside `variants.ts` and Tailwind scale
-- Ship blocks without mobile layout and a11y checks
+Use these when implementing or reviewing work:
+
+1. **Single source of truth for copy/structure** — change seed content in `page-seed.ts`; templates and CLI consume it. Don’t fork duplicate Spanish strings in three places.
+2. **Curated nav over generated nav** — header links stay editor-owned; section modules expose stable anchors instead of auto-injecting menu items.
+3. **Measure chrome, don’t guess** — sticky header height via `HeaderShell` / `--site-header-height` for full-viewport layouts and scroll padding.
+4. **Bridge vs section rhythm** — interstitial CTAs (Más trabajos) must not use the same vertical padding as major sections.
+5. **Theme tokens only** — every new UI surface must work in light and dark; prefer `border-line`, `text-muted`, `text-accent`, `bg-wash`, `currentColor` icons.
+6. **Accessible icon links** — footer (and similar) brand icons need visible hit area (~40px), `aria-label`, and `rel="noreferrer"` on external targets.
+7. **Seed is opt-in overwrite** — default create-if-missing; `--force` only when intentionally resetting CMS content.
+8. **Repeatable blocks need unique DOM ids** — Portafolio (and any future repeatable nav target) must not ship duplicate `id="portafolio"`.
+9. **Portada is not the document `<h1>`** — keep `CmsPage` sr-only h1; Portada uses `<h2 className="text-hero">`.
+10. **Extend social platforms in one place** — `lib/site/social.ts` options + `SocialIcon` map + seed defaults together.
+11. **Contact personal data in CMS links** — email/phone/social on Contacto come from block `links` / site settings, not hardcoded in React (seed may supply defaults).
+12. **No Studio/API secrets in the client** — write token and seed script stay server/local; never ship seed behind a public route.
 
 ---
 
-## 10. Changelog
+## 14. Do not
+
+- Use Spanish identifiers for `_type`, filenames, or React/component names
+- Use English for Studio field/document titles meant for editors
+- Add free-form CMS pages, blank page templates, or `app/[slug]` for Sanity pages
+- Put Portafolio modules on the Inicio seed by default
+- Auto-generate nested header submenus from repeated blocks
+- Hardcode header height in `calc()` instead of `--site-header-height`
+- Give Portada (or other blocks) a visible `<h1>` competing with `CmsPage`
+- Add a highlight/stat card back into Portada without product approval
+- Stack full `py-28` on bridge CTAs between sections, or pull them in with negative margins
+- Inline `CldImage` / `CldUploadWidget` / manual Cloudinary URLs in feature code
+- Pass `next/image` `loader` or function props from Server → Client Components
+- Add `next-cloudinary` React components outside `/studio`
+- Embed raw `stream.mux.com` or Mux image CDN for posters
+- Add `revalidate: N` polling
+- Store Cloudinary API secret in Studio
+- Enable Mux Plus/Premium, DRM, static MP4, or 4K without approval
+- Skip `lib/media-cleanup/extract.ts` when adding removable CMS media
+- Invent breakpoints or image widths outside `variants.ts` / Tailwind scale
+- Ship blocks without mobile layout, light/dark, and a11y checks
+- Nest vendor packages under a catch-all `lib/media/`
+- Fall back brand name to “Studio” or other generic placeholders
+
+---
+
+## 15. Changelog
 
 When you change a standard, edit **this file** and add a one-line note below.
 
 | Date | Change |
 |------|--------|
+| 2026-08-09 | Docs overhaul: seeding, site chrome/nav/anchors/social icons, module layout rules, reinforced guidelines §13 |
+| 2026-08-09 | Curated header nav + section anchors (`anchorId`, `SiteNav` scroll-spy); nav seed matches Inicio/Portafolio |
+| 2026-08-09 | Portafolio seed: portfolio + contact; seed siteSettings for header/footer; remove “Studio” brand fallback |
+| 2026-08-09 | `npm run seed:pages` — shared `page-seed.ts`, guarded create/overwrite for page singletons |
+| 2026-08-09 | `workCtaBlock` (Más trabajos) after Servicios in Inicio seed |
+| 2026-08-09 | `aboutBlock` (Quiénes somos); Portada showcase clips; Inicio seed without Portafolio module |
+| 2026-08-09 | Docs sync: language rules, folder layout, fixed pages (Inicio/Portafolio), module checklist, empty-block null returns |
+| 2026-08-09 | Folder layout + English code / Spanish Studio-UI; `components/{site,media,forms,page-builder}`, `lib/{sanity,page-builder,media-cleanup}` |
+| 2026-08-09 | Fixed page templates (Inicio `/`, Portafolio `/portfolio`); removed test/preview routes |
 | 2026-08-08 | Initial consolidated standards (architecture, media, a11y, responsive, env) |
 | 2026-08-08 | Cloudinary delivery: `auto:good` quality + capped responsive `next/image` loader |
 | 2026-08-08 | CloudinaryImage: server-built srcSet + native `<img>` (no RSC loader / no CldImage) |

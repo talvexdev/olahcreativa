@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseBody } from "next-sanity/webhook";
-import { sanityWriteClient } from "@/lib/sanity.client";
+import { sanityWriteClient } from "@/lib/sanity/client";
 import {
   diffRemovedMedia,
   extractMediaAssets,
   permanentDeleteAfter,
   tombstoneId,
-} from "@/lib/media-extract";
+} from "@/lib/media-cleanup/extract";
 
 const MEDIA_TYPES = new Set(["project", "page", "siteSettings"]);
 

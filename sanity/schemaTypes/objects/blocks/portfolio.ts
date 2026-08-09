@@ -1,12 +1,15 @@
 import { defineType, defineField, defineArrayMember } from "sanity";
 
+import { anchorIdField } from "../anchorId";
+
 /**
- * Portfolio section — each project card is rendered by components/blocks/Portfolio.tsx.
+ * Portfolio section — rendered by components/page-builder/blocks/Portfolio.tsx.
  * Hero: optional Mux video or Cloudinary still. Clips: Mux short loops or Cloudinary stills/GIFs.
+ * Default anchor: #portafolio (set Ancla when adding more than one Portafolio module).
  */
 export default defineType({
   name: "portfolioBlock",
-  title: "Portafolio (proyectos)",
+  title: "Portafolio",
   type: "object",
   fields: [
     defineField({
@@ -31,6 +34,11 @@ export default defineType({
       title: "Descripción de la sección",
       type: "text",
       rows: 3,
+    }),
+    defineField({
+      ...anchorIdField,
+      description:
+        "Opcional. Por defecto #portafolio. Si añades otro módulo Portafolio debajo, pon aquí un ancla distinta (ej. portafolio-eventos) y enlázala desde Ajustes del sitio si quieres.",
     }),
     defineField({
       name: "projects",

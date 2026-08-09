@@ -6,6 +6,7 @@ import { muxInput } from "sanity-plugin-mux-input";
 
 import { schemaTypes } from "./sanity/schemaTypes";
 import { structure } from "./sanity/lib/structure";
+import { pageTemplates } from "./sanity/lib/templates";
 import { RestoreTombstoneAction } from "./sanity/lib/tombstoneActions";
 
 export default defineConfig({
@@ -34,12 +35,27 @@ export default defineConfig({
 
   schema: {
     types: schemaTypes,
+    // Only the two fixed page templates (/, /portfolio) — no blank Page.
+    templates: (prev) => [
+      ...prev.filter((t) => t.schemaType !== "page"),
+      ...pageTemplates,
+    ],
   },
 
   document: {
+    // Pages are Studio singletons — hide from global “Create new”.
+    newDocumentOptions: (prev, { creationContext }) => {
+      if (creationContext.type === "global") {
+        return prev.filter(
+          (t) => t.templateId !== "page-homepage" && t.templateId !== "page-portfolio",
+        );
+      }
+      return prev;
+    },
     actions: (prev, context) =>
       context.schemaType === "mediaTombstone"
         ? [RestoreTombstoneAction, ...prev]
         : prev,
   },
 });
+

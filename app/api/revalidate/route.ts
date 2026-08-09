@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { parseBody } from "next-sanity/webhook";
 import { NextRequest, NextResponse } from "next/server";
+import { publicPathForPageId } from "@/lib/sanity/page-slugs";
 
 /**
  * Sanity webhook target — fires only on document publish, not on a timer.
@@ -9,10 +10,11 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(req: NextRequest) {
   try {
-    const { body, isValidSignature } = await parseBody<{ _type: string; slug?: { current: string } }>(
-      req,
-      process.env.SANITY_REVALIDATE_SECRET
-    );
+    const { body, isValidSignature } = await parseBody<{
+      _type: string;
+      _id?: string;
+      slug?: { current: string };
+    }>(req, process.env.SANITY_REVALIDATE_SECRET);
 
     if (!isValidSignature) {
       return NextResponse.json({ message: "Invalid signature" }, { status: 401 });
@@ -21,14 +23,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Bad request" }, { status: 400 });
     }
 
-    // Always safe to revalidate the homepage (featured projects can change)
+    // Safe default — home is a CMS singleton and may reference shared content.
     revalidatePath("/");
 
     if (body._type === "project" && body.slug?.current) {
       revalidatePath(`/work/${body.slug.current}`);
     }
-    if (body._type === "page" && body.slug?.current) {
-      revalidatePath(`/${body.slug.current}`);
+    if (body._type === "page") {
+      const path = publicPathForPageId(body._id);
+      if (path) revalidatePath(path);
     }
     if (body._type === "siteSettings") {
       revalidatePath("/", "layout"); // nav/footer live in the root layout

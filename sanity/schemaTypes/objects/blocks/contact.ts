@@ -1,14 +1,17 @@
 import { defineType, defineField } from "sanity";
 
+import { anchorIdField } from "../anchorId";
+
 /**
  * Copy only — the form fields and the email sending live in code
  * (components/BriefForm.tsx and lib/actions/contact.ts). Where the message
  * gets delivered is set with CONTACT_TO_EMAIL, not here, so an editor can
  * never accidentally reroute the inbox.
+ * Default in-page anchor: #contacto.
  */
 export default defineType({
   name: "contactBlock",
-  title: "Contacto (formulario)",
+  title: "Contacto",
   type: "object",
   fields: [
     defineField({
@@ -64,6 +67,7 @@ export default defineType({
       type: "string",
       initialValue: "Enviar brief",
     }),
+    anchorIdField,
   ],
   preview: {
     select: { title: "heading", subtitle: "eyebrow" },

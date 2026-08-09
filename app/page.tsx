@@ -1,30 +1,30 @@
-import { sanityClient, isSanityConfigured } from "@/lib/sanity.client";
-import { homepageProjectsQuery, siteSettingsQuery } from "@/lib/queries";
-import { ProjectGrid } from "@/components/ProjectGrid";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { CmsPage } from "@/components/page-builder/CmsPage";
+import { openGraphFromCloudinaryImage } from "@/lib/cloudinary";
+import { pageByIdQuery } from "@/lib/sanity/queries";
+import { sanityClient, isSanityConfigured } from "@/lib/sanity/client";
+import { HOME_PAGE_ID, HOME_PAGE_PATH } from "@/lib/sanity/page-slugs";
 
 // Static generation + on-demand revalidation only (no timed revalidate:N) —
 // see architecture notes: ties Sanity API usage to publish events, not traffic.
+
+export async function generateMetadata(): Promise<Metadata> {
+  if (!isSanityConfigured()) return {};
+  const page = await sanityClient.fetch(pageByIdQuery, { id: HOME_PAGE_ID }).catch(() => null);
+  if (!page) return {};
+  return {
+    title: page.seoTitle || page.title,
+    description: page.seoDescription,
+    ...openGraphFromCloudinaryImage(page.seoImage),
+  };
+}
+
 export default async function HomePage() {
-  const [projects, settings] = isSanityConfigured()
-    ? await Promise.all([
-        sanityClient.fetch(homepageProjectsQuery).catch(() => []),
-        sanityClient.fetch(siteSettingsQuery).catch(() => null),
-      ])
-    : [[], null];
+  if (!isSanityConfigured()) notFound();
 
-  const tagline =
-    settings?.tagline ||
-    "Photography that holds still long enough to be believed.";
+  const page = await sanityClient.fetch(pageByIdQuery, { id: HOME_PAGE_ID }).catch(() => null);
+  if (!page) notFound();
 
-  return (
-    <>
-      <section className="mx-auto max-w-8xl px-6 pb-16 pt-20">
-        <p className="frame-label mb-4">Selected work</p>
-        <h1 className="text-hero font-display max-w-4xl text-fg">
-          {tagline}
-        </h1>
-      </section>
-      <ProjectGrid projects={projects} />
-    </>
-  );
+  return <CmsPage page={page} path={HOME_PAGE_PATH} />;
 }
