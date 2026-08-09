@@ -12,7 +12,6 @@ export function ContactBlock({ block }: BlockProps<ContactBlockData>) {
   });
 
   return (
-    // Anchor for nav links that point at #contacto (or a custom ancla).
     <section id={sectionId} className="border-t border-line bg-surface">
       <div className="mx-auto grid max-w-8xl items-start gap-12 px-6 py-28 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-16">
         <div>

@@ -148,6 +148,8 @@ If `brandName` is missing, UI falls back to **"Olah Creativa"** — never a gene
 - `HeaderShell` measures the sticky header and sets `--site-header-height` on `:root` (updates on resize/orientation).
 - CSS fallback: `--site-header-height: 4.5rem` in `globals.css`.
 - `html { scroll-padding-top: var(--site-header-height); }` for hash links under the sticky bar.
+- Put section `id`s on the **outer module** (`<section>`) so hash nav includes top spacing; `scroll-padding-top` clears the sticky header.
+- `SiteNav` manually `scrollIntoView`s same-page hash clicks (Next may not re-scroll).
 - Portada (and any full-viewport module) uses `min-height: calc(100dvh - var(--site-header-height))` with a `100vh` fallback — **do not** hardcode rem guesses for header height.
 
 ### Navigation (curated, flat)
@@ -232,14 +234,15 @@ Studio labels Spanish; code/files/`_type` English:
 
 ### Más trabajos (`workCtaBlock`)
 
-- **Bridge** between full sections (e.g. Servicios and Proceso): do **not** use full `py-28` section rhythm.
-- Prefer tight padding + slight negative margin so it sits in neighboring section padding without stacking three section gaps.
+- **Bridge** between Servicios and Proceso: no full `py-28`, and **no negative margins** (they overlap neighbors and break hash scroll / scroll-spy).
+- Neighbors own the gap: Servicios `pt-28 pb-12`, Proceso `pt-12 pb-28`; the CTA sits in that space with no extra vertical padding of its own.
 - External `http(s)` → `target="_blank"`; `mailto:` / `tel:` same tab; `/` and `#` → Next `Link`.
 
 ### Servicios
 
 - Typical seed: **4** cards in 2×2 on large screens (`columnsFor(4) === 2`).
 - Badges like “Servicio principal” / “Servicio complementario” (not only PLANO 01…).
+- When followed by Más trabajos: use `pt-28 pb-12` (not symmetric `py-28`).
 
 ### Contacto + BriefForm
 
@@ -384,7 +387,7 @@ Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-bui
 ### Layout conventions
 
 - Gutter `px-6`; max width `max-w-8xl` centered.
-- Full section rhythm `py-16`–`py-28`; **bridge** modules (Más trabajos) use tight / negative margin — don’t stack three `py-28`s.
+- Full section rhythm `py-16`–`py-28`; **bridge** modules (Más trabajos) sit in reduced neighbor padding (`pb-12` / `pt-12`) — don’t stack three `py-28`s and don’t use negative margins.
 - Typography: prefer `text-hero` / clamp for display headings.
 - Grids: `grid-cols-1` → `sm:grid-cols-2` → `lg:grid-cols-3/4`; Servicios with 4 cards → 2×2.
 - Full-viewport heroes: `svh`/`dvh` + measured `--site-header-height`; allow growth on small screens (`min-h`, not fixed `h`).
@@ -453,7 +456,7 @@ Use these when implementing or reviewing work:
 - Hardcode header height in `calc()` instead of `--site-header-height`
 - Give Portada (or other blocks) a visible `<h1>` competing with `CmsPage`
 - Add a highlight/stat card back into Portada without product approval
-- Stack full `py-28` on bridge CTAs between sections
+- Stack full `py-28` on bridge CTAs between sections, or pull them in with negative margins
 - Inline `CldImage` / `CldUploadWidget` / manual Cloudinary URLs in feature code
 - Pass `next/image` `loader` or function props from Server → Client Components
 - Add `next-cloudinary` React components outside `/studio`

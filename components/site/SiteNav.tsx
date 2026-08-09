@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 
 export type SiteNavLink = { label: string; href: string };
 
@@ -33,6 +33,31 @@ function normalizePath(path: string) {
   return path.endsWith("/") ? path.slice(0, -1) : path;
 }
 
+function readHeaderOffsetPx() {
+  const headerVar = getComputedStyle(document.documentElement)
+    .getPropertyValue("--site-header-height")
+    .trim();
+  const n = Number.parseFloat(headerVar);
+  if (!Number.isFinite(n) || n <= 0) return 72;
+  if (headerVar.endsWith("rem")) return Math.round(n * 16);
+  return Math.round(n);
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/** Scroll a section so its content sits just under the sticky header. */
+function scrollToSectionId(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return false;
+  el.scrollIntoView({
+    behavior: prefersReducedMotion() ? "auto" : "smooth",
+    block: "start",
+  });
+  return true;
+}
+
 /**
  * Curated header nav with scroll-spy for same-page hash links.
  * Page links (e.g. `/portfolio`) activate by pathname; section links by visible section.
@@ -60,6 +85,30 @@ export function SiteNav({ links }: { links: SiteNavLink[] }) {
     [items, pathname],
   );
 
+  // After client navigations to `/#servicios` (etc.), ensure we land on the section.
+  useEffect(() => {
+    const id = window.location.hash.replace(/^#/, "");
+    if (!id || !sectionIds.includes(id)) return;
+
+    let cancelled = false;
+    const run = () => {
+      if (cancelled) return;
+      if (scrollToSectionId(id)) setActiveHash(id);
+    };
+
+    // Wait a frame so HeaderShell can publish --site-header-height / layout settle.
+    const raf = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(run);
+    });
+    const t = window.setTimeout(run, 100);
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(t);
+    };
+  }, [pathname, sectionIds]);
+
   useEffect(() => {
     if (sectionIds.length === 0) {
       setActiveHash("");
@@ -75,16 +124,7 @@ export function SiteNav({ links }: { links: SiteNavLink[] }) {
       return;
     }
 
-    const headerVar = getComputedStyle(document.documentElement)
-      .getPropertyValue("--site-header-height")
-      .trim();
-    const headerOffset = (() => {
-      const n = Number.parseFloat(headerVar);
-      if (!Number.isFinite(n) || n <= 0) return 72;
-      // Fallback in CSS is rem; HeaderShell publishes px.
-      if (headerVar.endsWith("rem")) return Math.round(n * 16);
-      return Math.round(n);
-    })();
+    const headerOffset = readHeaderOffsetPx();
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -97,14 +137,12 @@ export function SiteNav({ links }: { links: SiteNavLink[] }) {
           return;
         }
 
-        // Near top of page: clear section highlight so "Inicio" can win.
         if (window.scrollY < headerOffset) {
           setActiveHash("");
         }
       },
       {
         root: null,
-        // Bias toward the band just under the sticky header.
         rootMargin: `-${Math.round(headerOffset + 8)}px 0px -55% 0px`,
         threshold: [0.1, 0.25, 0.5],
       },
@@ -114,16 +152,31 @@ export function SiteNav({ links }: { links: SiteNavLink[] }) {
 
     const onHashChange = () => {
       const id = window.location.hash.replace(/^#/, "");
-      if (id && sectionIds.includes(id)) setActiveHash(id);
+      if (id && sectionIds.includes(id)) {
+        setActiveHash(id);
+        scrollToSectionId(id);
+      }
     };
     window.addEventListener("hashchange", onHashChange);
-    onHashChange();
 
     return () => {
       observer.disconnect();
       window.removeEventListener("hashchange", onHashChange);
     };
   }, [sectionIds]);
+
+  function onNavClick(event: MouseEvent<HTMLAnchorElement>, item: ParsedNavLink) {
+    if (!item.hash || item.path !== pathname) return;
+
+    const el = document.getElementById(item.hash);
+    if (!el) return;
+
+    // Same-page hash: Next may not re-scroll; do it ourselves under the header.
+    event.preventDefault();
+    scrollToSectionId(item.hash);
+    window.history.pushState(null, "", `${item.path === "/" ? "" : item.path}#${item.hash}`);
+    setActiveHash(item.hash);
+  }
 
   if (items.length === 0) return null;
 
@@ -139,6 +192,7 @@ export function SiteNav({ links }: { links: SiteNavLink[] }) {
           <Link
             key={`${item.label}-${item.href}`}
             href={item.href}
+            onClick={(event) => onNavClick(event, item)}
             className={`frame-label transition-colors ${
               active ? "text-accent" : "text-muted hover:text-fg"
             }`}
