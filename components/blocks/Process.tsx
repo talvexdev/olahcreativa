@@ -2,12 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-type Step = {
-  title?: string;
-  description?: string;
-  timecode?: string;
-  label?: string;
-};
+import type { BlockProps, ProcessBlockData, ProcessStep } from "@/lib/sanity/block-types";
 
 /** Where the playhead sits, as a CSS length. Driven by --p on the container. */
 const AT_PLAYHEAD = "calc(var(--p, 0) * 100%)";
@@ -29,11 +24,11 @@ function subscribeMotion(onChange: () => void) {
  * drop frames. React state only holds the active step index, which changes a
  * handful of times per section.
  */
-export function ProcessBlock({ block }: { block: any }) {
+export function ProcessBlock({ block }: BlockProps<ProcessBlockData>) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [scrubbed, setScrubbed] = useState(0);
 
-  const steps: Step[] = Array.isArray(block.steps) ? block.steps : [];
+  const steps: ProcessStep[] = Array.isArray(block.steps) ? block.steps : [];
   const count = steps.length;
 
   const reduceMotion = useSyncExternalStore(

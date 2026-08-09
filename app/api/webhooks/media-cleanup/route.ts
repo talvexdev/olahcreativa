@@ -8,20 +8,38 @@ import {
   tombstoneId,
 } from "@/lib/media-extract";
 
-const MEDIA_TYPES = new Set(["project", "page"]);
+const MEDIA_TYPES = new Set(["project", "page", "siteSettings"]);
 
 type WebhookBody = {
   _id: string;
   _type: string;
   title?: string;
+  brandName?: string;
   slug?: { current: string };
   _rev?: string;
 };
 
+async function resolveMuxAssetRefs(documentIds: string[]): Promise<string[]> {
+  if (documentIds.length === 0) return [];
+
+  const rows = await sanityWriteClient.fetch<{ assetId?: string }[]>(
+    `*[_id in $refs && _type == "mux.videoAsset"]{
+      "assetId": coalesce(assetId, data.id)
+    }`,
+    { refs: documentIds }
+  );
+
+  return rows
+    .map((row) => row.assetId)
+    .filter((assetId): assetId is string => typeof assetId === "string" && Boolean(assetId));
+}
+
+const extractOptions = { resolveMuxRefs: resolveMuxAssetRefs };
+
 /**
  * Sanity webhook target — creates mediaTombstone records when media is removed
- * from a project/page (delete or update). The daily cron permanently deletes
- * assets after the 14-day grace window.
+ * from a project/page (delete or update). Tombstones give editors a 14-day grace
+ * window to restore before manually deleting assets in Cloudinary/Mux.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -38,30 +56,29 @@ export async function POST(req: NextRequest) {
     }
 
     const sourceTitle =
-      body.title || body.slug?.current || body._id;
+      body.title || body.brandName || body.slug?.current || body._id;
 
     // Determine if this is a delete (document no longer exists) or update
-    const currentDoc = await sanityWriteClient.fetch(
-      `*[_id == $id][0]`,
-      { id: body._id }
-    );
+    const currentDoc = await sanityWriteClient.fetch(`*[_id == $id][0]`, { id: body._id });
 
-    let assetsToTombstone: ReturnType<typeof extractMediaAssets>;
+    let assetsToTombstone: Awaited<ReturnType<typeof extractMediaAssets>>;
 
     if (!currentDoc) {
       // Document deleted — tombstone all media from the webhook payload
-      assetsToTombstone = extractMediaAssets(
+      assetsToTombstone = await extractMediaAssets(
         body as Record<string, unknown>,
-        sourceTitle
+        sourceTitle,
+        extractOptions
       );
     } else {
       // Document updated — diff against previous revision if available
       const previousRev = await getPreviousRevision(body._id, body._rev);
       if (previousRev) {
-        assetsToTombstone = diffRemovedMedia(
+        assetsToTombstone = await diffRemovedMedia(
           previousRev as Record<string, unknown>,
           currentDoc as Record<string, unknown>,
-          sourceTitle
+          sourceTitle,
+          extractOptions
         );
       } else {
         return NextResponse.json({ message: "No previous revision to diff" }, { status: 200 });

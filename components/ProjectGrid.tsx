@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { CloudinaryPhoto } from "./CloudinaryPhoto";
+
+import { CloudinaryImage } from "@/components/cloudinary";
+import type { SanityCloudinaryImage } from "@/lib/cloudinary";
 
 type Project = {
   _id: string;
   title: string;
   slug: string;
   category?: string;
-  coverImage: { publicId: string; alt: string };
+  coverImage: SanityCloudinaryImage;
 };
 
 /**
@@ -23,9 +25,8 @@ export function ProjectGrid({ projects }: { projects: Project[] }) {
           className="group relative aspect-[4/5] overflow-hidden bg-card"
         >
           <div className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105">
-            <CloudinaryPhoto
-              publicId={project.coverImage.publicId}
-              alt={project.coverImage.alt}
+            <CloudinaryImage
+              image={project.coverImage}
               variant="grid"
               priority={i < 3}
             />

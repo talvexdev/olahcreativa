@@ -1,27 +1,9 @@
-type Clip = { label?: string; caption?: string };
-type Photo = { label?: string; alt?: string };
+import { CloudinaryImage } from "@/components/cloudinary";
+import { MuxVideoPlayer } from "@/components/MuxVideoPlayer";
+import { hasCloudinaryAsset, toCloudinaryPoster } from "@/lib/cloudinary";
+import { normalizePortfolioBlock, type PortfolioClip, type PortfolioProject } from "@/lib/media";
+import type { BlockProps, PortfolioBlockData } from "@/lib/sanity/block-types";
 
-type Project = {
-  label?: string;
-  category?: string;
-  title?: string;
-  description?: string;
-  credits?: string[];
-  clips?: Clip[];
-  gallery?: Photo[];
-};
-
-/**
- * Portfolio section: one card per project — big video on top, then the
- * write-up and credits, a row of short clips, and a swipeable photo strip.
- *
- * Media is intentionally not wired to Mux/Cloudinary yet. Every media slot
- * renders a <MediaFrame> placeholder, so the layout is real and reviewable
- * before any asset exists. Swapping in the real players later means replacing
- * the frame's children, not restructuring the section.
- */
-
-/** Ratio classes are written out because Tailwind only ships the ones it can see in source. */
 const RATIO = {
   video: "aspect-video",
   portrait: "aspect-[3/4]",
@@ -40,32 +22,31 @@ function MediaFrame({
   children?: React.ReactNode;
   className?: string;
 }) {
+  const isEmpty = !children;
+
   return (
-    <div
-      className={`relative overflow-hidden bg-surface ${RATIO[ratio]} ${className}`}
-    >
-      {/*
-        Diagonal hatch marks the frame as "nothing here yet" without needing an
-        image file. It's painted with a gradient over currentColor, so it picks
-        up the theme instead of being a fixed grey that only works in one mode.
-      */}
-      <div
-        aria-hidden
-        className="absolute inset-0 text-fg/[0.07]"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(135deg, currentColor 0 1px, transparent 1px 11px)",
-        }}
-      />
-      <div className="absolute inset-0 border border-dashed border-line" />
+    <div className={`relative overflow-hidden bg-surface ${RATIO[ratio]} ${className}`}>
+      {isEmpty && (
+        <>
+          <div
+            aria-hidden
+            className="absolute inset-0 text-fg/[0.07]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(135deg, currentColor 0 1px, transparent 1px 11px)",
+            }}
+          />
+          <div className="absolute inset-0 border border-dashed border-line" />
+        </>
+      )}
 
       {badge && (
-        <p className="absolute left-3 top-3 rounded-full bg-bg/70 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted backdrop-blur">
+        <p className="absolute left-3 top-3 z-10 rounded-full bg-bg/70 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted backdrop-blur">
           {badge}
         </p>
       )}
 
-      {note && (
+      {note && isEmpty && (
         <p className="absolute bottom-3 right-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted/70">
           {note}
         </p>
@@ -78,13 +59,9 @@ function MediaFrame({
 
 function PlayButton() {
   return (
-    <div className="absolute inset-0 grid place-items-center">
+    <div aria-hidden className="absolute inset-0 grid place-items-center">
       <span className="grid h-20 w-20 place-items-center rounded-full border border-accent/50 bg-accent/15 backdrop-blur transition-transform duration-300 group-hover:scale-105">
-        <svg
-          viewBox="0 0 24 24"
-          className="ml-1 h-7 w-7 fill-accent"
-          aria-hidden
-        >
+        <svg viewBox="0 0 24 24" className="ml-1 h-7 w-7 fill-accent" aria-hidden>
           <path d="M8 5v14l11-7z" />
         </svg>
       </span>
@@ -92,7 +69,29 @@ function PlayButton() {
   );
 }
 
-function ProjectCard({ project, index }: { project: Project; index: number }) {
+function ClipMedia({ clip, title }: { clip: PortfolioClip; title?: string }) {
+  if (clip.video?.playbackId) {
+    return (
+      <MuxVideoPlayer
+        playbackId={clip.video.playbackId}
+        status={clip.video.status}
+        poster={toCloudinaryPoster(clip.video.poster)}
+        autoplayMuted={clip.video.autoplayMuted ?? true}
+        title={title}
+        fillContainer
+        posterVariant="grid"
+      />
+    );
+  }
+
+  if (hasCloudinaryAsset(clip.image)) {
+    return <CloudinaryImage image={clip.image} variant="grid" />;
+  }
+
+  return null;
+}
+
+function ProjectCard({ project, index }: { project: PortfolioProject; index: number }) {
   const clips = project.clips ?? [];
   const gallery = project.gallery ?? [];
   const credits = project.credits ?? [];
@@ -101,34 +100,36 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
     <article className="overflow-hidden rounded-2xl border border-line bg-card">
       <div className="group relative">
-        <MediaFrame note="Video principal · 16:9">
-          <PlayButton />
-        </MediaFrame>
+        {project.heroVideo?.playbackId ? (
+          <MuxVideoPlayer
+            playbackId={project.heroVideo.playbackId}
+            status={project.heroVideo.status}
+            poster={toCloudinaryPoster(project.heroVideo.poster)}
+            autoplayMuted={project.heroVideo.autoplayMuted ?? false}
+            title={project.title}
+          />
+        ) : hasCloudinaryAsset(project.heroImage) ? (
+          <MediaFrame>
+            <CloudinaryImage image={project.heroImage} variant="hero" priority={index === 0} />
+          </MediaFrame>
+        ) : (
+          <MediaFrame note="Video principal · 16:9">
+            <PlayButton />
+          </MediaFrame>
+        )}
 
-        {/*
-          Title sits over the foot of the video, as in the reference. The scrim
-          is what keeps it legible once a real frame is behind it — without it
-          the text would be at the mercy of whatever the video's last pixel row
-          happens to be.
-        */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg via-bg/80 to-transparent px-8 pb-8 pt-24">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">
             {label}
-            {project.category && (
-              <span className="text-muted"> · {project.category}</span>
-            )}
+            {project.category && <span className="text-muted"> · {project.category}</span>}
           </p>
-          <h3 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {project.title}
-          </h3>
+          <h3 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{project.title}</h3>
         </div>
       </div>
 
       <div className="bg-surface px-8 py-10">
         {project.description && (
-          <p className="max-w-[62ch] text-lg leading-relaxed">
-            {project.description}
-          </p>
+          <p className="max-w-[62ch] text-lg leading-relaxed">{project.description}</p>
         )}
 
         {credits.length > 0 && (
@@ -146,7 +147,9 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                 <MediaFrame
                   className="rounded-xl"
                   badge={clip.label || `Clip ${String(i + 1).padStart(2, "0")}`}
-                />
+                >
+                  <ClipMedia clip={clip} title={project.title} />
+                </MediaFrame>
                 {clip.caption && (
                   <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
                     {clip.caption}
@@ -162,12 +165,6 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
             <p className="frame-label mb-4 text-muted">
               Galería <span aria-hidden>→</span> desliza para ver más
             </p>
-            {/*
-              tabIndex makes the strip reachable by keyboard: a scroll container
-              whose content isn't focusable is otherwise unscrollable without a
-              mouse or trackpad. The role/label pair is what makes that focus
-              stop announce itself as something scrollable.
-            */}
             <ul
               tabIndex={0}
               role="region"
@@ -180,7 +177,9 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                     ratio="portrait"
                     className="rounded-xl"
                     badge={photo.label || String(i + 1).padStart(2, "0")}
-                  />
+                  >
+                    <CloudinaryImage image={photo.image} variant="portrait" />
+                  </MediaFrame>
                 </li>
               ))}
             </ul>
@@ -191,34 +190,30 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   );
 }
 
-export function PortfolioBlock({ block }: { block: any }) {
-  const projects: Project[] = Array.isArray(block.projects) ? block.projects : [];
+export function PortfolioBlock({ block }: BlockProps<PortfolioBlockData>) {
+  const view = normalizePortfolioBlock(block);
+  if (!view) return null;
 
   return (
-    // The id is the anchor a PORTAFOLIO nav link can point at.
     <section id="portafolio" className="mx-auto max-w-8xl px-6 py-28">
-      {block.eyebrow && (
+      {view.eyebrow && (
         <p className="frame-label mb-8 flex items-center gap-3">
           <span className="block h-px w-8 bg-current" />
-          {block.eyebrow}
+          {view.eyebrow}
         </p>
       )}
 
       <h2 className="max-w-[20ch] text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-        {block.heading}{" "}
-        {block.headingAccent && (
-          <span className="text-accent">{block.headingAccent}</span>
-        )}
+        {view.heading}{" "}
+        {view.headingAccent && <span className="text-accent">{view.headingAccent}</span>}
       </h2>
 
-      {block.description && (
-        <p className="mt-8 max-w-[52ch] text-lg leading-relaxed text-muted">
-          {block.description}
-        </p>
+      {view.description && (
+        <p className="mt-8 max-w-[52ch] text-lg leading-relaxed text-muted">{view.description}</p>
       )}
 
       <div className="mt-16 space-y-16">
-        {projects.map((project, i) => (
+        {view.projects.map((project, i) => (
           <ProjectCard key={i} project={project} index={i} />
         ))}
       </div>

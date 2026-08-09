@@ -19,9 +19,16 @@ export default defineConfig({
   plugins: [
     structureTool({ structure }),
     visionTool(), // GROQ playground — dev/editor tool, not exposed publicly
-    cloudinarySchemaPlugin(), // cloud name + API key configured once in Studio UI
+    cloudinarySchemaPlugin(), // cloud name + API key configured once in Studio UI (secrets in dataset)
     muxInput({
-      mp4_support: "none", // keep to Mux's adaptive HLS delivery — no plain MP4 fallback needed
+      // Free-tier defaults — editors cannot override (disableUploadConfig).
+      video_quality: "basic", // free encoding; Plus/Premium charge per minute
+      max_resolution_tier: "1080p",
+      mp4_support: "none", // paid static renditions — HLS only
+      static_renditions: [],
+      defaultPublic: true,
+      defaultSigned: false,
+      disableUploadConfig: true,
     }),
   ],
 

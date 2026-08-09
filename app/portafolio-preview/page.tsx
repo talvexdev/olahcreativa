@@ -20,6 +20,7 @@ export const metadata: Metadata = {
  * once the real page exists.
  */
 const demo = {
+  _type: "portfolioBlock" as const,
   eyebrow: "Nuestro trabajo",
   heading: "Portafolio",
   description:

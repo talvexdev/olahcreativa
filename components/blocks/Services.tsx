@@ -1,8 +1,4 @@
-type Service = {
-  title?: string;
-  description?: string;
-  badge?: string;
-};
+import type { BlockProps, ServiceItem, ServicesBlockData } from "@/lib/sanity/block-types";
 
 /**
  * How many columns to use on wide screens, given the number of cards.
@@ -16,8 +12,8 @@ function columnsFor(count: number) {
   return Math.min(3, count);
 }
 
-export function ServicesBlock({ block }: { block: any }) {
-  const services: Service[] = Array.isArray(block.services) ? block.services : [];
+export function ServicesBlock({ block }: BlockProps<ServicesBlockData>) {
+  const services: ServiceItem[] = Array.isArray(block.services) ? block.services : [];
   if (services.length === 0) return null;
 
   const columns = columnsFor(services.length);

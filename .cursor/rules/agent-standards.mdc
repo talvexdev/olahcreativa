@@ -1,0 +1,15 @@
+---
+description: Project standards — read docs/AGENT-STANDARDS.md (single source of truth)
+alwaysApply: true
+---
+
+# Agent standards
+
+**Authoritative document:** [`docs/AGENT-STANDARDS.md`](../../docs/AGENT-STANDARDS.md)
+
+Before implementing or reviewing features in this repo:
+
+1. **Read** `docs/AGENT-STANDARDS.md` and follow **all** sections.
+2. When standards change, edit **only** that file — not this rule, not `AGENTS.md`, not `CLAUDE.md` (those are pointers).
+
+Covers: SOLID/DRY, page-builder modules, Cloudinary/Mux, free-tier performance, responsive UI/UX, a11y, env/credentials.

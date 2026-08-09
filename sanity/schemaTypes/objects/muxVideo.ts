@@ -16,12 +16,16 @@ export default defineType({
       name: "asset",
       title: "Video file",
       type: "mux.video", // field type injected by sanity-plugin-mux-input
+      options: { max_resolution_tier: "1080p" },
+      validation: (R) => R.required(),
     }),
     defineField({
       name: "poster",
       title: "Poster image",
       type: "cloudinaryImage",
-      description: "Shown before the video plays and while it's off-screen (lazy-loaded).",
+      description:
+        "Required. Shown before playback and as the lazy-load placeholder — keeps posters off Mux image CDN.",
+      validation: (R) => R.required(),
     }),
     defineField({
       name: "caption",

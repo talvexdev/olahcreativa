@@ -16,6 +16,7 @@ export default defineType({
       name: "asset",
       title: "Cloudinary asset",
       type: "cloudinary.asset", // field type injected by sanity-plugin-cloudinary
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "alt",

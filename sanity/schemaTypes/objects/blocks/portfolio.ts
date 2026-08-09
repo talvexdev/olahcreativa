@@ -1,15 +1,8 @@
 import { defineType, defineField, defineArrayMember } from "sanity";
 
 /**
- * Portfolio section — a list of projects, each rendered as one card by
- * components/blocks/Portfolio.tsx.
- *
- * Media is deliberately absent for now: the component draws placeholder
- * frames so the layout can be reviewed before any asset exists. When the
- * Mux/Cloudinary pipeline is turned on, add `video` (muxVideo) to the project
- * object, and `image` (cloudinaryImage) to `clips` and `gallery` — the counts
- * and labels below already drive how many frames appear, so nothing about the
- * layout has to change.
+ * Portfolio section — each project card is rendered by components/blocks/Portfolio.tsx.
+ * Hero: optional Mux video or Cloudinary still. Clips: Mux short loops or Cloudinary stills/GIFs.
  */
 export default defineType({
   name: "portfolioBlock",
@@ -81,10 +74,23 @@ export default defineType({
               of: [{ type: "string" }],
             }),
             defineField({
+              name: "heroVideo",
+              title: "Video principal",
+              type: "muxVideo",
+              description: "16:9 hero clip. Takes priority over the hero still when both are set.",
+            }),
+            defineField({
+              name: "heroImage",
+              title: "Imagen principal (alternativa al video)",
+              type: "cloudinaryImage",
+              description: "Use when there is no hero video yet — e.g. a key still or poster frame.",
+            }),
+            defineField({
               name: "clips",
               title: "Clips cortos",
               type: "array",
-              description: "La fila de recuadros pequeños. Máximo 4.",
+              description:
+                "La fila de recuadros pequeños. Máximo 4. Usa Mux para loops de video cortos o Cloudinary para stills y GIFs animados.",
               validation: (R) => R.max(4),
               of: [
                 defineArrayMember({
@@ -98,8 +104,32 @@ export default defineType({
                       description: "ej. CLIP 01, STILL",
                     }),
                     defineField({ name: "caption", title: "Pie", type: "string" }),
+                    defineField({
+                      name: "video",
+                      title: "Video corto (Mux)",
+                      type: "muxVideo",
+                      description:
+                        "Loops sin audio — activa “Autoplay muted” en el video para preview en la cuadrícula. No subas GIFs aquí; usa la imagen Cloudinary.",
+                    }),
+                    defineField({
+                      name: "image",
+                      title: "Imagen / GIF",
+                      type: "cloudinaryImage",
+                      description:
+                        "Stills o GIFs animados desde Cloudinary. El video Mux tiene prioridad si ambos están definidos.",
+                    }),
                   ],
-                  preview: { select: { title: "label", subtitle: "caption" } },
+                  preview: {
+                    select: {
+                      title: "label",
+                      subtitle: "caption",
+                      videoPoster: "video.poster.asset",
+                      image: "image.asset",
+                    },
+                    prepare({ title, subtitle, videoPoster, image }) {
+                      return { title, subtitle, media: videoPoster ?? image };
+                    },
+                  },
                 }),
               ],
             }),
@@ -115,14 +145,12 @@ export default defineType({
                   fields: [
                     defineField({ name: "label", title: "Etiqueta", type: "string" }),
                     defineField({
-                      name: "alt",
-                      title: "Texto alternativo",
-                      type: "string",
-                      description:
-                        "Describe la foto — lo leen los lectores de pantalla y Google.",
+                      name: "image",
+                      title: "Foto",
+                      type: "cloudinaryImage",
                     }),
                   ],
-                  preview: { select: { title: "label", subtitle: "alt" } },
+                  preview: { select: { title: "label", subtitle: "image.alt", media: "image.asset" } },
                 }),
               ],
             }),
