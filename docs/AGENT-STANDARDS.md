@@ -96,7 +96,7 @@ Constants: `HOME_PAGE_ID` / `PORTFOLIO_PAGE_ID` in `lib/sanity/page-slugs.ts`. F
 - **No page slug field** — routes are App Router files + document ids.
 - **No** free-form page templates, blank “Page” create, or catch-all `/[slug]` for CMS pages.
 - Templates: `sanity/lib/templates.ts`. Structure: `sanity/lib/structure.ts` (Spanish nav labels).
-- Inicio seed order: Portada → Servicios → Proceso → Contacto (`heroBlock` → `servicesBlock` → `processBlock` → `contactBlock`). Quiénes somos not built yet.
+- Inicio seed order: Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto (`heroBlock` → `aboutBlock` → `servicesBlock` → `workCtaBlock` → `processBlock` → `contactBlock`). Portafolio is its own page (`/portfolio`), not part of the Inicio seed.
 - Portafolio template starts with empty `pageBuilder`.
 - Shared render: `CmsPage` → `PageBuilder`. Header/Footer come from root `app/layout.tsx` (site settings), not page-builder modules.
 - Until a singleton is published, its route 404s.
@@ -110,7 +110,9 @@ Studio labels Spanish; code/files/`_type` English:
 | Studio title | `_type` | Schema | Component |
 |---|---|---|---|
 | Portada | `heroBlock` | `objects/blocks/hero.ts` | `page-builder/blocks/Hero.tsx` |
+| Quiénes somos | `aboutBlock` | `about.ts` | `About.tsx` |
 | Servicios | `servicesBlock` | `services.ts` | `Services.tsx` |
+| Más trabajos | `workCtaBlock` | `workCta.ts` | `WorkCta.tsx` |
 | Proceso | `processBlock` | `process.ts` | `Process.tsx` |
 | Contacto | `contactBlock` | `contact.ts` | `Contact.tsx` |
 | Portafolio | `portfolioBlock` | `portfolio.ts` | `Portfolio.tsx` |
@@ -119,7 +121,7 @@ Studio labels Spanish; code/files/`_type` English:
 | Testimonio | `testimonialBlock` | `testimonialBlock.ts` | `Testimonial.tsx` |
 | Llamada a la acción | `ctaBlock` | `ctaBlock.ts` | `Cta.tsx` |
 
-Future about section: Studio **"Quiénes somos"**; code `aboutBlock` / `about.ts` / `About.tsx` (not Spanish identifiers in code).
+Portada may include optional `showcaseClips` (Mux/Cloudinary, max 3) + highlight card. Quiénes somos is copy + circular brand mark (`#nosotros`). Más trabajos is the full-width banner CTA (distinct from centered `ctaBlock`).
 
 ### Adding a block (four coordinated changes)
 
@@ -334,6 +336,8 @@ When you change a standard, edit **this file** and add a one-line note below.
 
 | Date | Change |
 |------|--------|
+| 2026-08-09 | `workCtaBlock` (Más trabajos) after Servicios in Inicio seed |
+| 2026-08-09 | `aboutBlock` (Quiénes somos); Portada showcase clips + highlight; Inicio seed without Portafolio module |
 | 2026-08-09 | Docs sync: language rules, folder layout, fixed pages (Inicio/Portafolio), module checklist, empty-block null returns |
 | 2026-08-09 | Folder layout + English code / Spanish Studio-UI; `components/{site,media,forms,page-builder}`, `lib/{sanity,page-builder,media-cleanup}` |
 | 2026-08-09 | Fixed page templates (Inicio `/`, Portafolio `/portfolio`); removed test/preview routes |

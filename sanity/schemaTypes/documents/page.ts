@@ -28,10 +28,12 @@ export default defineType({
       group: "content",
       of: [
         { type: "heroBlock" },
+        { type: "aboutBlock" },
         { type: "imageGridBlock" },
         { type: "textBlock" },
         { type: "testimonialBlock" },
         { type: "ctaBlock" },
+        { type: "workCtaBlock" },
         { type: "processBlock" },
         { type: "servicesBlock" },
         { type: "contactBlock" },

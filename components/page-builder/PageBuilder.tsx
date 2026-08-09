@@ -1,21 +1,25 @@
 import type { PageBuilderBlock } from "@/lib/sanity/block-types";
 
+import { AboutBlock } from "./blocks/About";
 import { ContactBlock } from "./blocks/Contact";
-import { ImageGridBlock } from "./blocks/ImageGrid";
 import { CtaBlock } from "./blocks/Cta";
 import { HeroBlock } from "./blocks/Hero";
+import { ImageGridBlock } from "./blocks/ImageGrid";
 import { PortfolioBlock } from "./blocks/Portfolio";
 import { ProcessBlock } from "./blocks/Process";
 import { ServicesBlock } from "./blocks/Services";
 import { TestimonialBlock } from "./blocks/Testimonial";
 import { TextBlockView } from "./blocks/TextBlock";
+import { WorkCtaBlock } from "./blocks/WorkCta";
 
 const BLOCK_TYPES = new Set<PageBuilderBlock["_type"]>([
   "heroBlock",
+  "aboutBlock",
   "imageGridBlock",
   "textBlock",
   "testimonialBlock",
   "ctaBlock",
+  "workCtaBlock",
   "processBlock",
   "servicesBlock",
   "contactBlock",
@@ -28,10 +32,12 @@ function isPageBuilderBlock(raw: unknown): raw is PageBuilderBlock {
   return typeof type === "string" && BLOCK_TYPES.has(type as PageBuilderBlock["_type"]);
 }
 
-function renderBlock(block: PageBuilderBlock, key: React.Key) {
+function renderBlock(block: PageBuilderBlock, key: string | number) {
   switch (block._type) {
     case "heroBlock":
       return <HeroBlock key={key} block={block} />;
+    case "aboutBlock":
+      return <AboutBlock key={key} block={block} />;
     case "imageGridBlock":
       return <ImageGridBlock key={key} block={block} />;
     case "textBlock":
@@ -40,6 +46,8 @@ function renderBlock(block: PageBuilderBlock, key: React.Key) {
       return <TestimonialBlock key={key} block={block} />;
     case "ctaBlock":
       return <CtaBlock key={key} block={block} />;
+    case "workCtaBlock":
+      return <WorkCtaBlock key={key} block={block} />;
     case "processBlock":
       return <ProcessBlock key={key} block={block} />;
     case "servicesBlock":

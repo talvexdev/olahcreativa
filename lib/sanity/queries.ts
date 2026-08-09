@@ -46,7 +46,29 @@ const pageProjection = groq`{
       headingAccent,
       description,
       ctaPrimary,
-      ctaSecondary
+      ctaSecondary,
+      highlightEyebrow,
+      highlightHeading,
+      highlightDescription,
+      showcaseClips[]{
+        label,
+        video ${muxVideoProjection},
+        image ${cloudinaryImageProjection}
+      }
+    },
+    _type == "aboutBlock" => {
+      eyebrow,
+      heading,
+      headingAccent,
+      paragraphs,
+      brandMark,
+      brandMarkAccent,
+      brandMarkSubtitle
+    },
+    _type == "workCtaBlock" => {
+      heading,
+      description,
+      cta
     },
     _type == "imageGridBlock" => {
       heading, columns,

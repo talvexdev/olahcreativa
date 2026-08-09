@@ -54,6 +54,15 @@ export async function extractMediaAssets(
     for (const block of blocks) {
       if (!block || typeof block !== "object") continue;
       const b = block as Record<string, unknown>;
+      if (b._type === "heroBlock") {
+        const clips = b.showcaseClips as unknown[];
+        clips?.forEach((clip) => {
+          if (!clip || typeof clip !== "object") return;
+          const c = clip as Record<string, unknown>;
+          walkMuxVideo(c.video);
+          walkCloudinaryImage(c.image);
+        });
+      }
       if (b._type === "imageGridBlock") {
         const items = b.items as unknown[];
         items?.forEach(walkCloudinaryImage);

@@ -42,7 +42,7 @@ Studio has exactly two page singletons (no free-form pages):
 | **Inicio (/)** | `/` | Page-builder modules for the site root |
 | **Portafolio (/portfolio)** | `/portfolio` | Page-builder modules for the portfolio route |
 
-Open either page under **Páginas** in Studio and publish. Inicio seeds **Portada → Servicios → Proceso → Contacto** (edit or reorder as needed). Portafolio starts empty. Header/footer come from **Ajustes del sitio**, not from page modules.
+Open either page under **Páginas** in Studio and publish. Inicio seeds **Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto** (edit or reorder as needed). Portafolio (`/portfolio`) starts empty. Header/footer come from **Ajustes del sitio**, not from page modules.
 
 Agent conventions (folder layout, EN code / ES Studio labels, new modules): [`docs/AGENT-STANDARDS.md`](docs/AGENT-STANDARDS.md).
 
@@ -114,7 +114,6 @@ Agent conventions (folder layout, EN code / ES Studio labels, new modules): [`do
   `/portfolio` 404 until Inicio / Portafolio are published
 - Resend sender domain verification (contact/brief block uses
   `onboarding@resend.dev` until you configure a verified domain)
-- Quiénes somos module (planned; not in the Inicio seed yet)
 
 ## Free-tier discipline (why the code looks the way it does)
 

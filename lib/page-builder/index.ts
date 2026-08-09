@@ -20,3 +20,9 @@ export {
   getImageGridColumnClass,
   normalizeImageGridItems,
 } from "./image-grid";
+
+export {
+  normalizeHeroShowcase,
+  type HeroShowcaseClip,
+  type HeroShowcaseView,
+} from "./hero";

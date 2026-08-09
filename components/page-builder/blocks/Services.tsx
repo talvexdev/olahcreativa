@@ -19,7 +19,7 @@ export function ServicesBlock({ block }: BlockProps<ServicesBlockData>) {
   const columns = columnsFor(services.length);
 
   return (
-    <section className="mx-auto max-w-8xl px-6 py-28">
+    <section id="servicios" className="mx-auto max-w-8xl px-6 py-28">
       {block.eyebrow && (
         <p className="frame-label mb-8 flex items-center gap-3">
           <span className="block h-px w-8 bg-current" />

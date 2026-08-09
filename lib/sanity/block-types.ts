@@ -17,6 +17,22 @@ export type HeroBlockData = {
   description?: string;
   ctaPrimary?: SanityLink;
   ctaSecondary?: SanityLink;
+  showcaseClips?: unknown[];
+  highlightEyebrow?: string;
+  highlightHeading?: string;
+  highlightDescription?: string;
+};
+
+export type AboutBlockData = {
+  _type: "aboutBlock";
+  _key?: string;
+  eyebrow?: string;
+  heading?: string;
+  headingAccent?: string;
+  paragraphs?: string[];
+  brandMark?: string;
+  brandMarkAccent?: string;
+  brandMarkSubtitle?: string;
 };
 
 export type ImageGridBlockData = {
@@ -58,6 +74,14 @@ export type CtaBlockData = {
   heading?: string;
   buttonHref?: string;
   buttonLabel?: string;
+};
+
+export type WorkCtaBlockData = {
+  _type: "workCtaBlock";
+  _key?: string;
+  heading?: string;
+  description?: string;
+  cta?: SanityLink;
 };
 
 export type ProcessStep = {
@@ -106,11 +130,13 @@ export type ContactBlockData = {
 
 export type PageBuilderBlock =
   | HeroBlockData
+  | AboutBlockData
   | ImageGridBlockData
   | PortfolioBlockData
   | TextBlockData
   | TestimonialBlockData
   | CtaBlockData
+  | WorkCtaBlockData
   | ProcessBlockData
   | ServicesBlockData
   | ContactBlockData;

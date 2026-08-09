@@ -8,10 +8,12 @@ import muxVideo from "./objects/muxVideo";
 import link from "./objects/link";
 
 import heroBlock from "./objects/blocks/hero";
+import aboutBlock from "./objects/blocks/about";
 import imageGridBlock from "./objects/blocks/imageGrid";
 import textBlock from "./objects/blocks/textBlock";
 import testimonialBlock from "./objects/blocks/testimonialBlock";
 import ctaBlock from "./objects/blocks/ctaBlock";
+import workCtaBlock from "./objects/blocks/workCta";
 import processBlock from "./objects/blocks/process";
 import servicesBlock from "./objects/blocks/services";
 import contactBlock from "./objects/blocks/contact";
@@ -29,12 +31,15 @@ export const schemaTypes = [
   link,
   // Page-builder blocks
   heroBlock,
+  aboutBlock,
   imageGridBlock,
   textBlock,
   testimonialBlock,
   ctaBlock,
+  workCtaBlock,
   processBlock,
   servicesBlock,
   contactBlock,
   portfolioBlock,
 ];
+
