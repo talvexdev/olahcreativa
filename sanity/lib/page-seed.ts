@@ -15,6 +15,7 @@ export type SiteSettingsSeedValue = {
   tagline?: string;
   navLinks?: { label: string; href: string }[];
   contactEmail?: string;
+  /** `platform` must match CMS list values in `lib/site/social.ts`. */
   socialLinks?: { platform: string; url: string }[];
   defaultSeoTitle?: string;
   defaultSeoDescription?: string;
@@ -30,12 +31,13 @@ export const siteSettingsSeed: SiteSettingsSeedValue = {
     { label: "Portafolio", href: "/portfolio" },
     { label: "Contacto", href: "/#contacto" },
   ],
-  contactEmail: "Contact@olahcreativa.com",
+  contactEmail: "contact@olahcreativa.com",
   socialLinks: [
-    {
-      platform: "Instagram",
-      url: "https://instagram.com/olahcreativa",
-    },
+    { platform: "instagram", url: "https://instagram.com/olahcreativa" },
+    { platform: "facebook", url: "https://facebook.com/olahcreativa" },
+    { platform: "youtube", url: "https://youtube.com/@olahcreativa" },
+    { platform: "tiktok", url: "https://tiktok.com/@olahcreativa" },
+    { platform: "whatsapp", url: "https://wa.me/5063224610311" },
   ],
   defaultSeoTitle: "Olah Creativa",
   defaultSeoDescription:
@@ -58,14 +60,11 @@ export const homepagePageSeed: PageSeedValue = {
         label: "Cuéntanos tu proyecto",
         href: "#contacto",
       },
-      ctaSecondary: {
-        label: "Ver servicios",
-        href: "#servicios",
-      },
-      highlightEyebrow: "PRODUCTORA AUDIOVISUAL",
-      highlightHeading: "Idea → entrega",
-      highlightDescription: "dirección, rodaje, edición y color",
-    },
+          ctaSecondary: {
+            label: "Ver servicios",
+            href: "#servicios",
+          },
+        },
     {
       _key: "homeAbout",
       _type: "aboutBlock",
@@ -89,45 +88,30 @@ export const homepagePageSeed: PageSeedValue = {
       services: [
         {
           _key: "homeService1",
-          badge: "PLANO 01",
-          title: "Video corporativo",
+          badge: "Servicio principal",
+          title: "Creación Audiovisual",
           description:
-            "Piezas institucionales que presentan tu empresa, tu equipo y tu propuesta de valor con claridad.",
+            "Concepto, guión, rodaje y dirección de piezas audiovisuales para el lanzamiento o fortalecimiento de tu marca. Además esto incluye la edición, colorización, motion graphics y sonido: el momento donde el material bruto se convierte en historia.",
         },
         {
           _key: "homeService2",
-          badge: "PLANO 02",
-          title: "Contenido para redes",
+          badge: "Servicio principal",
+          title: "Fotografía",
           description:
-            "Videos cortos y dinámicos pensados para Instagram, TikTok y YouTube que dan ganas de seguir viendo.",
+            "Sesiones de producto, marca y equipo pensadas para catálogos, redes y campañas.",
         },
         {
           _key: "homeService3",
-          badge: "PLANO 03",
-          title: "Comerciales",
-          description:
-            "Spots publicitarios con dirección de arte propia, hechos para vender un producto o servicio.",
+          badge: "Servicio principal",
+          title: "Eventos",
+          description: "Acompañamiento audiovisual para eventos sociales.",
         },
         {
           _key: "homeService4",
-          badge: "PLANO 04",
-          title: "Documentales de marca",
+          badge: "Servicio complementario",
+          title: "Redes sociales y marketing digital",
           description:
-            "Historias reales detrás de una empresa: su gente, su proceso, su porqué.",
-        },
-        {
-          _key: "homeService5",
-          badge: "PLANO 05",
-          title: "Cobertura de eventos",
-          description:
-            "Registro audiovisual completo de lanzamientos, conferencias y activaciones de marca.",
-        },
-        {
-          _key: "homeService6",
-          badge: "PLANO 06",
-          title: "Motion graphics",
-          description:
-            "Animación y edición gráfica para explicar ideas complejas de forma simple y visual.",
+            "Gestión de contenido y estrategia digital para marcas que ya trabajan su producción con nosotros.",
         },
       ],
     },
@@ -175,11 +159,27 @@ export const homepagePageSeed: PageSeedValue = {
     {
       _key: "homeContact",
       _type: "contactBlock",
-      eyebrow: "HABLEMOS",
-      heading: "¿Listo para grabar algo",
-      headingAccent: "increíble?",
+      eyebrow: "CONTACTO",
+      heading: "¿Tienes un proyecto en mente?",
       description:
-        "Cuéntanos qué necesita tu marca y te contactamos para conversar sobre tu proyecto.",
+        "Cuéntanos qué necesitas y te enviamos una propuesta con alcance, tiempos y presupuesto en 48 horas.",
+      links: [
+        {
+          label: "contact@olahcreativa.com",
+          href: "mailto:contact@olahcreativa.com",
+        },
+        {
+          label: "3224610311",
+          href: "tel:+5063224610311",
+        },
+        {
+          label: "@olahcreativa",
+          href: "https://instagram.com/olahcreativa",
+        },
+      ],
+      formTitle: "BRIEF RÁPIDO",
+      interests: ["Video", "Social media", "Fotografía", "No sé aún"],
+      submitLabel: "Enviar brief",
     },
   ],
 };
@@ -203,11 +203,27 @@ export const portfolioPageSeed: PageSeedValue = {
     {
       _key: "portfolioContact",
       _type: "contactBlock",
-      eyebrow: "HABLEMOS",
-      heading: "¿Listo para grabar algo",
-      headingAccent: "increíble?",
+      eyebrow: "CONTACTO",
+      heading: "¿Tienes un proyecto en mente?",
       description:
-        "Cuéntanos qué necesita tu marca y te contactamos para conversar sobre tu proyecto.",
+        "Cuéntanos qué necesitas y te enviamos una propuesta con alcance, tiempos y presupuesto en 48 horas.",
+      links: [
+        {
+          label: "contact@olahcreativa.com",
+          href: "mailto:contact@olahcreativa.com",
+        },
+        {
+          label: "3224610311",
+          href: "tel:+5063224610311",
+        },
+        {
+          label: "@olahcreativa",
+          href: "https://instagram.com/olahcreativa",
+        },
+      ],
+      formTitle: "BRIEF RÁPIDO",
+      interests: ["Video", "Social media", "Fotografía", "No sé aún"],
+      submitLabel: "Enviar brief",
     },
   ],
 };

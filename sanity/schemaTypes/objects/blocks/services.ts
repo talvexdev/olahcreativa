@@ -27,7 +27,7 @@ export default defineType({
       title: "Servicios",
       type: "array",
       description:
-        "La grilla se acomoda sola: 3 servicios van en una fila, 4 en 2×2, 5 o 6 de a tres por fila.",
+        "La grilla se acomoda sola: 3 servicios van en una fila, 4 en 2×2, 5 o 6 de a tres por fila. Lo habitual son 4.",
       validation: (R) => R.min(1).max(6),
       of: [
         {
@@ -49,7 +49,8 @@ export default defineType({
               name: "badge",
               title: "Etiqueta",
               type: "string",
-              description: "Opcional — si lo dejas vacío se genera solo (PLANO 01, PLANO 02…)",
+              description:
+                'ej. "Servicio principal" o "Servicio complementario". Si lo dejas vacío se numera solo (Plano 01…)',
             }),
           ],
           preview: {

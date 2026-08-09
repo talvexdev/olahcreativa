@@ -8,7 +8,7 @@ export function ContactBlock({ block }: BlockProps<ContactBlockData>) {
   return (
     // Anchor for nav links that point at #contacto.
     <section id="contacto" className="border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-8xl gap-16 px-6 py-28 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+      <div className="mx-auto grid max-w-8xl items-start gap-12 px-6 py-28 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-16">
         <div>
           {block.eyebrow && (
             <p className="frame-label mb-8 flex items-center gap-3">
@@ -17,7 +17,7 @@ export function ContactBlock({ block }: BlockProps<ContactBlockData>) {
             </p>
           )}
 
-          <h2 className="max-w-[14ch] text-balance text-4xl font-semibold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
+          <h2 className="max-w-[16ch] text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]">
             {block.heading}{" "}
             {block.headingAccent && (
               <span className="text-accent">{block.headingAccent}</span>
@@ -25,19 +25,22 @@ export function ContactBlock({ block }: BlockProps<ContactBlockData>) {
           </h2>
 
           {block.description && (
-            <p className="mt-8 max-w-[44ch] text-lg leading-relaxed text-muted">
+            <p className="mt-7 max-w-[40ch] text-base leading-relaxed text-muted sm:text-lg">
               {block.description}
             </p>
           )}
 
           {links.length > 0 && (
-            <div className="mt-10 flex flex-wrap gap-x-8 gap-y-4 text-lg">
+            <div className="mt-12 flex flex-col gap-4 sm:mt-14 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-10 sm:gap-y-4">
               {links.map((link, i) =>
                 link.href ? (
                   <a
                     key={i}
                     href={link.href}
-                    className="border-b border-line pb-1 transition-colors hover:border-accent hover:text-accent"
+                    className="w-fit border-b border-line pb-1 text-base text-fg transition-colors hover:border-accent hover:text-accent"
+                    {...(link.href.startsWith("http")
+                      ? { target: "_blank", rel: "noreferrer" }
+                      : {})}
                   >
                     {link.label || link.href}
                   </a>

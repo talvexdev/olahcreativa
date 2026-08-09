@@ -1,5 +1,7 @@
 import { defineType, defineField } from "sanity";
 
+import { SOCIAL_PLATFORM_OPTIONS } from "@/lib/site/social";
+
 /** Singleton — global brand/nav/footer/contact settings. */
 export default defineType({
   name: "siteSettings",
@@ -33,13 +35,34 @@ export default defineType({
       name: "socialLinks",
       title: "Redes sociales",
       type: "array",
+      description:
+        "Se muestran como iconos en el pie de página. Elige la red y pega la URL. Puedes añadir, quitar o reordenar.",
       of: [
         {
           type: "object",
           fields: [
-            defineField({ name: "platform", title: "Plataforma", type: "string" }),
-            defineField({ name: "url", title: "URL", type: "url" }),
+            defineField({
+              name: "platform",
+              title: "Red",
+              type: "string",
+              options: { list: SOCIAL_PLATFORM_OPTIONS, layout: "dropdown" },
+              validation: (R) => R.required(),
+            }),
+            defineField({
+              name: "url",
+              title: "URL",
+              type: "url",
+              validation: (R) => R.required().uri({ scheme: ["http", "https"] }),
+            }),
           ],
+          preview: {
+            select: { title: "platform", subtitle: "url" },
+            prepare({ title, subtitle }) {
+              const label =
+                SOCIAL_PLATFORM_OPTIONS.find((o) => o.value === title)?.title || title;
+              return { title: label || "Red", subtitle };
+            },
+          },
         },
       ],
     }),

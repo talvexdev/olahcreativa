@@ -49,8 +49,13 @@ export function WorkCtaBlock({ block }: BlockProps<WorkCtaBlockData>) {
   const label = block.cta?.label?.trim();
 
   return (
-    <section className="mx-auto max-w-8xl px-6 pb-28 pt-4" aria-labelledby="work-cta-heading">
-      <div className="flex flex-col items-start justify-between gap-8 rounded-2xl border border-line bg-card p-8 sm:p-11 lg:flex-row lg:items-center lg:gap-12">
+    // Bridge between full sections (Servicios / Proceso): pull into their py-28
+    // so we don’t stack another section rhythm above and below the banner.
+    <section
+      className="relative z-[1] mx-auto max-w-8xl px-6 -my-10 py-0 sm:-my-14"
+      aria-labelledby="work-cta-heading"
+    >
+      <div className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-line bg-card p-7 sm:gap-8 sm:p-9 lg:flex-row lg:items-center lg:gap-10">
         <div className="min-w-0 flex-1">
           <h2
             id="work-cta-heading"

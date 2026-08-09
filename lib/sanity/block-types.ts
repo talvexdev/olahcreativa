@@ -18,9 +18,6 @@ export type HeroBlockData = {
   ctaPrimary?: SanityLink;
   ctaSecondary?: SanityLink;
   showcaseClips?: unknown[];
-  highlightEyebrow?: string;
-  highlightHeading?: string;
-  highlightDescription?: string;
 };
 
 export type AboutBlockData = {

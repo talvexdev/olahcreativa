@@ -122,7 +122,7 @@ Studio labels Spanish; code/files/`_type` English:
 | Testimonio | `testimonialBlock` | `testimonialBlock.ts` | `Testimonial.tsx` |
 | Llamada a la acción | `ctaBlock` | `ctaBlock.ts` | `Cta.tsx` |
 
-Portada may include optional `showcaseClips` (Mux/Cloudinary, max 3) + highlight card. Quiénes somos is copy + circular brand mark (`#nosotros`). Más trabajos is the full-width banner CTA (distinct from centered `ctaBlock`).
+Portada may include optional `showcaseClips` (Mux/Cloudinary, max 3). Quiénes somos is copy + circular brand mark (`#nosotros`). Más trabajos is the full-width banner CTA (distinct from centered `ctaBlock`).
 
 ### Adding a block (four coordinated changes)
 

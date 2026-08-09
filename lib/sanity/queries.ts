@@ -47,9 +47,6 @@ const pageProjection = groq`{
       description,
       ctaPrimary,
       ctaSecondary,
-      highlightEyebrow,
-      highlightHeading,
-      highlightDescription,
       showcaseClips[]{
         label,
         video ${muxVideoProjection},

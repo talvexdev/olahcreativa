@@ -6,10 +6,10 @@ import { submitBrief, type BriefFormState } from "@/lib/actions/contact";
 const initialState: BriefFormState = { ok: false, message: "" };
 
 const FIELD =
-  "w-full rounded-xl border border-line bg-transparent px-4 py-3.5 text-fg outline-none transition-colors placeholder:text-muted focus:border-accent";
+  "w-full rounded-[10px] border border-line bg-transparent px-4 py-[15px] text-[15px] text-fg outline-none transition-colors placeholder:text-muted focus:border-accent";
 
 const CARD =
-  "relative flex flex-col gap-4 rounded-2xl border border-line bg-card p-8";
+  "relative flex flex-col gap-3.5 rounded-2xl border border-line bg-card p-7 sm:p-8";
 
 export function BriefForm({
   formTitle,
@@ -65,26 +65,27 @@ export function BriefForm({
       </div>
 
       {formTitle && (
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+        <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
           {formTitle}
         </p>
       )}
 
-      <input name="name" required placeholder="Tu nombre" className={FIELD} />
-      <input name="company" placeholder="Empresa" className={FIELD} />
+      <input name="name" required placeholder="Tu nombre" className={FIELD} autoComplete="name" />
+      <input name="company" placeholder="Empresa" className={FIELD} autoComplete="organization" />
       <input
         name="email"
         type="email"
         required
         placeholder="Correo"
         className={FIELD}
+        autoComplete="email"
       />
 
       {options.length > 0 && (
         <>
           {/* The chips are buttons, so their state rides along in a hidden input. */}
           <input type="hidden" name="interests" value={picked.join(", ")} />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pt-0.5">
             {options.map((option) => {
               const on = picked.includes(option);
               return (
@@ -93,10 +94,10 @@ export function BriefForm({
                   type="button"
                   onClick={() => toggle(option)}
                   aria-pressed={on}
-                  className={`rounded-full border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
+                  className={`rounded-full border px-4 py-2 text-sm transition-colors ${
                     on
                       ? "border-accent text-accent"
-                      : "border-line text-muted hover:border-fg/40"
+                      : "border-line text-muted hover:border-fg/40 hover:text-fg"
                   }`}
                 >
                   {option}
@@ -112,7 +113,7 @@ export function BriefForm({
         rows={4}
         required
         placeholder="Cuéntanos del proyecto"
-        className={`${FIELD} resize-none`}
+        className={`${FIELD} min-h-28 resize-none`}
       />
 
       {state.message && (
@@ -124,7 +125,7 @@ export function BriefForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-xl bg-accent px-6 py-4 font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="mt-0.5 w-full rounded-[10px] bg-accent px-6 py-4 text-center font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {pending ? "Enviando…" : submitLabel || "Enviar brief"}
       </button>

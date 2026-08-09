@@ -69,24 +69,6 @@ export default defineType({
         }),
       ],
     }),
-    defineField({
-      name: "highlightEyebrow",
-      title: "Tarjeta destacada — subtítulo",
-      type: "string",
-      description: "ej. PRODUCTORA AUDIOVISUAL",
-    }),
-    defineField({
-      name: "highlightHeading",
-      title: "Tarjeta destacada — título",
-      type: "string",
-      description: "ej. Idea → entrega",
-    }),
-    defineField({
-      name: "highlightDescription",
-      title: "Tarjeta destacada — descripción",
-      type: "string",
-      description: "ej. dirección, rodaje, edición y color",
-    }),
   ],
   preview: {
     select: { title: "heading", subtitle: "eyebrow" },

@@ -144,19 +144,6 @@ async function seedTarget(
     return "skipped";
   }
 
-  const doc =
-    target.kind === "page"
-      ? {
-          _id: target.id,
-          _type: "page" as const,
-          ...structuredClone(target.seed),
-        }
-      : {
-          _id: target.id,
-          _type: "siteSettings" as const,
-          ...structuredClone(target.seed),
-        };
-
   const location =
     target.kind === "page" ? ` for ${target.path}` : " (header/footer on every page)";
 
@@ -170,7 +157,19 @@ async function seedTarget(
     return "dry-run";
   }
 
-  await client.createOrReplace(doc);
+  if (target.kind === "page") {
+    await client.createOrReplace({
+      _id: target.id,
+      _type: "page",
+      ...structuredClone(target.seed),
+    });
+  } else {
+    await client.createOrReplace({
+      _id: target.id,
+      _type: "siteSettings",
+      ...structuredClone(target.seed),
+    });
+  }
 
   if (hasDraft) {
     try {

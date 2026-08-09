@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CloudinaryImage } from "@/components/media/cloudinary";
+import { HeaderShell } from "@/components/site/HeaderShell";
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import type { SanityCloudinaryImage } from "@/lib/cloudinary";
 
@@ -16,7 +17,7 @@ export function Header({
   navLinks?: NavLink[];
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg/95 backdrop-blur">
+    <HeaderShell>
       <div className="mx-auto flex max-w-8xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-6 py-5">
         <Link
           href="/"
@@ -49,6 +50,6 @@ export function Header({
         </nav>
         <ThemeToggle />
       </div>
-    </header>
+    </HeaderShell>
   );
 }
