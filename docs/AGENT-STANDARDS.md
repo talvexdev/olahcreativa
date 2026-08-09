@@ -97,8 +97,9 @@ Constants: `HOME_PAGE_ID` / `PORTFOLIO_PAGE_ID` in `lib/sanity/page-slugs.ts`. F
 - **No** free-form page templates, blank “Page” create, or catch-all `/[slug]` for CMS pages.
 - Templates: `sanity/lib/templates.ts`. Structure: `sanity/lib/structure.ts` (Spanish nav labels).
 - Inicio seed order: Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto (`heroBlock` → `aboutBlock` → `servicesBlock` → `workCtaBlock` → `processBlock` → `contactBlock`). Portafolio is its own page (`/portfolio`), not part of the Inicio seed.
-- Portafolio template starts with empty `pageBuilder`.
-- Shared render: `CmsPage` → `PageBuilder`. Header/Footer come from root `app/layout.tsx` (site settings), not page-builder modules.
+- Shared seed payloads: `sanity/lib/page-seed.ts` (page templates + `npm run seed:pages`). Script seeds `siteSettings` + both pages; create-if-missing by default; `--force` overwrites; `--dry-run` prints only. No Mux/Cloudinary assets in the seed.
+- Portafolio seed: one `portfolioBlock` + `contactBlock`. Editors may insert more `portfolioBlock`s below the first.
+- Shared render: `CmsPage` → `PageBuilder`. Header/Footer come from root `app/layout.tsx` (`siteSettings`), not page-builder modules — every page gets them.
 - Until a singleton is published, its route 404s.
 
 ---
@@ -152,7 +153,7 @@ Portada may include optional `showcaseClips` (Mux/Cloudinary, max 3) + highlight
 |----------|---------|
 | `NEXT_PUBLIC_SANITY_*` | Sanity project + dataset |
 | `SANITY_API_READ_TOKEN` | Server read |
-| `SANITY_API_WRITE_TOKEN` | Media-cleanup webhook |
+| `SANITY_API_WRITE_TOKEN` | Media-cleanup webhook + local `npm run seed:pages` |
 | `SANITY_REVALIDATE_SECRET` | Webhook signature (you generate — not from Sanity) |
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Delivery URLs |
 | `RESEND_API_KEY` / `CONTACT_TO_EMAIL` | Contact/brief form (`contactBlock`) |
@@ -336,6 +337,8 @@ When you change a standard, edit **this file** and add a one-line note below.
 
 | Date | Change |
 |------|--------|
+| 2026-08-09 | Portafolio seed: portfolio + contact; seed siteSettings for header/footer; remove “Studio” brand fallback |
+| 2026-08-09 | `npm run seed:pages` — shared `page-seed.ts`, guarded create/overwrite for page singletons |
 | 2026-08-09 | `workCtaBlock` (Más trabajos) after Servicios in Inicio seed |
 | 2026-08-09 | `aboutBlock` (Quiénes somos); Portada showcase clips + highlight; Inicio seed without Portafolio module |
 | 2026-08-09 | Docs sync: language rules, folder layout, fixed pages (Inicio/Portafolio), module checklist, empty-block null returns |

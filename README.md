@@ -42,7 +42,15 @@ Studio has exactly two page singletons (no free-form pages):
 | **Inicio (/)** | `/` | Page-builder modules for the site root |
 | **Portafolio (/portfolio)** | `/portfolio` | Page-builder modules for the portfolio route |
 
-Open either page under **Páginas** in Studio and publish. Inicio seeds **Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto** (edit or reorder as needed). Portafolio (`/portfolio`) starts empty. Header/footer come from **Ajustes del sitio**, not from page modules.
+Seed published singletons from the repo (skips pages that already exist):
+
+```bash
+npm run seed:pages              # create if missing
+npm run seed:pages -- --dry-run # preview only
+npm run seed:pages -- --force   # overwrite published + drop matching drafts
+```
+
+Requires `SANITY_API_WRITE_TOKEN` in `.env.local`. Shared copy lives in `sanity/lib/page-seed.ts`. Inicio: **Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto**. Portafolio: **Portafolio → Contacto** (add more Portafolio modules below the first in the page builder as needed). Header/footer come from **Ajustes del sitio** on every page (seeded with the script). Add media in the CMS editor afterward.
 
 Agent conventions (folder layout, EN code / ES Studio labels, new modules): [`docs/AGENT-STANDARDS.md`](docs/AGENT-STANDARDS.md).
 

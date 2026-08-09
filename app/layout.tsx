@@ -63,13 +63,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Header
-          brandName={settings?.brandName || "Studio"}
+          brandName={settings?.brandName || "Olah Creativa"}
           logo={settings?.logo}
           navLinks={settings?.navLinks}
         />
         <main>{children}</main>
         <Footer
-          brandName={settings?.brandName || "Studio"}
+          brandName={settings?.brandName || "Olah Creativa"}
           contactEmail={settings?.contactEmail}
           socialLinks={settings?.socialLinks}
         />
