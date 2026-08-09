@@ -2,27 +2,51 @@ import type { StructureResolver } from "sanity/structure";
 
 /**
  * Guided Studio navigation instead of a flat, alphabetical document list.
- * Singletons (Site settings) are pinned as single items, not lists — this
- * is the "simple, guided UI" mitigation for both photographers having
- * Administrator access on Sanity's free plan (no scoped Editor role
- * available below Growth).
+ * Singletons (site settings, fixed pages) are pinned as single items, not lists —
+ * simple guided UI for editors on Sanity's free plan (no scoped Editor role
+ * below Growth).
  */
 export const structure: StructureResolver = (S) =>
   S.list()
-    .title("Content")
+    .title("Contenido")
     .items([
       S.listItem()
-        .title("Projects")
-        .child(S.documentTypeList("project").title("Projects")),
+        .title("Proyectos")
+        .child(S.documentTypeList("project").title("Proyectos")),
       S.listItem()
-        .title("Pages")
-        .child(S.documentTypeList("page").title("Pages")),
+        .title("Páginas")
+        .child(
+          S.list()
+            .title("Páginas")
+            .items([
+              S.listItem()
+                .title("Inicio (/)")
+                .id("page-homepage")
+                .child(
+                  S.document()
+                    .schemaType("page")
+                    .documentId("homepage")
+                    .title("Inicio")
+                    .initialValueTemplate("page-homepage"),
+                ),
+              S.listItem()
+                .title("Portafolio (/portfolio)")
+                .id("page-portfolio")
+                .child(
+                  S.document()
+                    .schemaType("page")
+                    .documentId("pagePortfolio")
+                    .title("Portafolio")
+                    .initialValueTemplate("page-portfolio"),
+                ),
+            ]),
+        ),
       S.divider(),
       S.listItem()
-        .title("Site settings")
+        .title("Ajustes del sitio")
         .child(S.document().schemaType("siteSettings").documentId("siteSettings")),
       S.divider(),
       S.listItem()
-        .title("Pending media cleanup")
-        .child(S.documentTypeList("mediaTombstone").title("Pending media cleanup")),
+        .title("Limpieza de media pendiente")
+        .child(S.documentTypeList("mediaTombstone").title("Limpieza de media pendiente")),
     ]);

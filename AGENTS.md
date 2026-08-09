@@ -14,9 +14,12 @@ Edit that file when conventions change. Do not duplicate standards in `.cursor/r
 
 - **Stack:** Next.js 16 · Sanity Studio · Cloudinary · Mux · Tailwind v4 · Vercel
 - **Human setup:** `README.md` (accounts, env, webhooks)
-- **Images:** `components/cloudinary/CloudinaryImage.tsx` + `lib/cloudinary/`
-- **Video:** `components/MuxVideoPlayer.tsx`
-- **New CMS block:** schema → `page.ts` → `lib/queries.ts` → block component → `PageBuilder.tsx`
+- **Language:** English code/files/`_type`; Spanish Studio labels + user-facing copy
+- **Layout:** `components/{site,media,forms,page-builder}` · `lib/{sanity,cloudinary,mux,page-builder,media-cleanup}`
+- **Images:** `components/media/cloudinary/CloudinaryImage.tsx` + `lib/cloudinary/`
+- **Video:** `components/media/MuxVideoPlayer.tsx`
+- **Fixed pages:** Inicio `/` (`homepage`) · Portafolio `/portfolio` (`pagePortfolio`) — `sanity/lib/templates.ts`
+- **New CMS block:** English `_type` + files; Spanish Studio `title` — schema → `documents/page.ts` → `pageByIdQuery` → `page-builder/blocks` → `PageBuilder.tsx`
 
 ## Cursor
 

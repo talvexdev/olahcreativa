@@ -39,7 +39,7 @@ export function projectJsonLd(project: {
 
 export function webPageJsonLd(page: {
   title: string;
-  slug: string;
+  path: string;
   description?: string;
 }) {
   return {
@@ -47,6 +47,6 @@ export function webPageJsonLd(page: {
     "@type": "WebPage",
     name: page.title,
     description: page.description,
-    url: `${siteUrl()}/${page.slug}`,
+    url: page.path === "/" ? siteUrl() : `${siteUrl()}${page.path}`,
   };
 }

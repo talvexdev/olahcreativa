@@ -8,7 +8,7 @@ import { defineType, defineField } from "sanity";
  */
 export default defineType({
   name: "contactBlock",
-  title: "Contacto (formulario)",
+  title: "Contacto",
   type: "object",
   fields: [
     defineField({

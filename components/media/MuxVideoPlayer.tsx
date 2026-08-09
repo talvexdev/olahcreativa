@@ -2,7 +2,7 @@
 
 import MuxPlayer from "@mux/mux-player-react/lazy";
 
-import { CloudinaryImage } from "@/components/cloudinary";
+import { CloudinaryImage } from "@/components/media/cloudinary";
 import {
   cloudinaryImageUrl,
   type CloudinaryPoster,

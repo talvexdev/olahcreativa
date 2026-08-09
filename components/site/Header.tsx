@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { CloudinaryImage } from "@/components/cloudinary";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { CloudinaryImage } from "@/components/media/cloudinary";
+import { ThemeToggle } from "@/components/site/ThemeToggle";
 import type { SanityCloudinaryImage } from "@/lib/cloudinary";
 
 type NavLink = { label: string; href: string };

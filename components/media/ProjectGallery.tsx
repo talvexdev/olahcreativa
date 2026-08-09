@@ -4,10 +4,10 @@ import { useState, useCallback } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
-import { CloudinaryImage } from "@/components/cloudinary";
+import { CloudinaryImage } from "@/components/media/cloudinary";
 import { cloudinaryImageUrl } from "@/lib/cloudinary";
-import { MuxVideoPlayer } from "@/components/MuxVideoPlayer";
-import type { GalleryItem } from "@/lib/media/gallery";
+import { MuxVideoPlayer } from "@/components/media/MuxVideoPlayer";
+import type { GalleryItem } from "@/lib/page-builder";
 
 type Props = {
   items: GalleryItem[];

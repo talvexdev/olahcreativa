@@ -2,19 +2,19 @@ import { defineType, defineField } from "sanity";
 
 export default defineType({
   name: "link",
-  title: "Link",
+  title: "Enlace",
   type: "object",
   fields: [
     defineField({
       name: "label",
-      title: "Button text",
+      title: "Texto del botón",
       type: "string",
     }),
     defineField({
       name: "href",
-      title: "Where it goes",
+      title: "Destino",
       type: "string",
-      description: "e.g. /contacto, #portafolio, or mailto:hola@olahcreativa.com",
+      description: "ej. /portfolio, #portafolio, #contacto o mailto:hola@olahcreativa.com",
     }),
   ],
 });

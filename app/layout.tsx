@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import { sanityClient, isSanityConfigured } from "@/lib/sanity.client";
-import { siteSettingsQuery } from "@/lib/queries";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { sanityClient, isSanityConfigured } from "@/lib/sanity/client";
+import { siteSettingsQuery } from "@/lib/sanity/queries";
+import { Header } from "@/components/site/Header";
+import { Footer } from "@/components/site/Footer";
 import { websiteJsonLd } from "@/lib/json-ld";
 import { openGraphFromCloudinaryImage } from "@/lib/cloudinary";
 

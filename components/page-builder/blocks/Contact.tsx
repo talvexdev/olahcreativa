@@ -1,11 +1,12 @@
-import { BriefForm } from "@/components/BriefForm";
+import { BriefForm } from "@/components/forms/BriefForm";
 import type { BlockProps, ContactBlockData, SanityLink } from "@/lib/sanity/block-types";
 
 export function ContactBlock({ block }: BlockProps<ContactBlockData>) {
   const links: SanityLink[] = Array.isArray(block.links) ? block.links : [];
+  if (!block.heading) return null;
 
   return (
-    // The id is the anchor the CONTACTO nav link points at.
+    // Anchor for nav links that point at #contacto.
     <section id="contacto" className="border-t border-line bg-surface">
       <div className="mx-auto grid max-w-8xl gap-16 px-6 py-28 lg:grid-cols-[1.1fr_1fr] lg:items-center">
         <div>

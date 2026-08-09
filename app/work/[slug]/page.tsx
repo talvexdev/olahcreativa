@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { sanityClient, isSanityConfigured } from "@/lib/sanity.client";
-import { projectBySlugQuery, allProjectSlugsQuery } from "@/lib/queries";
-import { ProjectGallery } from "@/components/ProjectGallery";
+import { sanityClient, isSanityConfigured } from "@/lib/sanity/client";
+import { projectBySlugQuery, allProjectSlugsQuery } from "@/lib/sanity/queries";
+import { ProjectGallery } from "@/components/media/ProjectGallery";
 import { projectJsonLd } from "@/lib/json-ld";
 import { cloudinarySeoUrl, openGraphFromCloudinaryImage } from "@/lib/cloudinary";
-import { mapProjectMediaToGalleryItems } from "@/lib/media/gallery";
+import { mapProjectMediaToGalleryItems } from "@/lib/page-builder";
 
 export async function generateStaticParams() {
   if (!isSanityConfigured()) return [];

@@ -6,7 +6,7 @@ import { defineType, defineField } from "sanity";
  */
 export default defineType({
   name: "processBlock",
-  title: "Proceso (línea de tiempo)",
+  title: "Proceso",
   type: "object",
   fields: [
     defineField({

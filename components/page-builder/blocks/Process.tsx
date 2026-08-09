@@ -38,7 +38,7 @@ export function ProcessBlock({ block }: BlockProps<ProcessBlockData>) {
   );
 
   // Readers who ask for less motion get the finished state, not a moving dot.
-  const active = reduceMotion ? count - 1 : scrubbed;
+  const active = count === 0 ? 0 : reduceMotion ? count - 1 : scrubbed;
 
   useEffect(() => {
     const el = trackRef.current;

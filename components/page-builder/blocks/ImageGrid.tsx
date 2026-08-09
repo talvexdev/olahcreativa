@@ -1,5 +1,5 @@
-import { CloudinaryImage } from "@/components/cloudinary";
-import { getImageGridColumnClass, normalizeImageGridItems } from "@/lib/media";
+import { CloudinaryImage } from "@/components/media/cloudinary";
+import { getImageGridColumnClass, normalizeImageGridItems } from "@/lib/page-builder";
 import type { BlockProps, ImageGridBlockData } from "@/lib/sanity/block-types";
 
 export function ImageGridBlock({ block }: BlockProps<ImageGridBlockData>) {

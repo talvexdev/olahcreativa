@@ -3,7 +3,7 @@ export {
   type GalleryImageItem,
   type GalleryItem,
   type GalleryVideoItem,
-} from "./gallery";
+} from "./project-gallery";
 
 export {
   normalizePortfolioBlock,

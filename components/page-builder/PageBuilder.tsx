@@ -1,9 +1,9 @@
 import type { PageBuilderBlock } from "@/lib/sanity/block-types";
 
 import { ContactBlock } from "./blocks/Contact";
+import { ImageGridBlock } from "./blocks/ImageGrid";
 import { CtaBlock } from "./blocks/Cta";
 import { HeroBlock } from "./blocks/Hero";
-import { ImageGridBlock } from "./blocks/ImageGrid";
 import { PortfolioBlock } from "./blocks/Portfolio";
 import { ProcessBlock } from "./blocks/Process";
 import { ServicesBlock } from "./blocks/Services";
@@ -55,9 +55,7 @@ function renderBlock(block: PageBuilderBlock, key: React.Key) {
 
 /**
  * Maps each Sanity pageBuilder block type to its React component.
- * This registry is the entire mechanism behind "photographers add/edit
- * pages without a developer" — new block types get added here once,
- * then are available on every page.
+ * New block types get added here once, then are available on every page.
  */
 export function PageBuilder({ blocks }: { blocks: readonly unknown[] | null | undefined }) {
   return (

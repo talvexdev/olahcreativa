@@ -1,12 +1,12 @@
 import { defineType, defineField, defineArrayMember } from "sanity";
 
 /**
- * Portfolio section — each project card is rendered by components/blocks/Portfolio.tsx.
+ * Portfolio section — rendered by components/page-builder/blocks/Portfolio.tsx.
  * Hero: optional Mux video or Cloudinary still. Clips: Mux short loops or Cloudinary stills/GIFs.
  */
 export default defineType({
   name: "portfolioBlock",
-  title: "Portafolio (proyectos)",
+  title: "Portafolio",
   type: "object",
   fields: [
     defineField({

@@ -1,7 +1,7 @@
-import { CloudinaryImage } from "@/components/cloudinary";
-import { MuxVideoPlayer } from "@/components/MuxVideoPlayer";
+import { CloudinaryImage } from "@/components/media/cloudinary";
+import { MuxVideoPlayer } from "@/components/media/MuxVideoPlayer";
 import { hasCloudinaryAsset, toCloudinaryPoster } from "@/lib/cloudinary";
-import { normalizePortfolioBlock, type PortfolioClip, type PortfolioProject } from "@/lib/media";
+import { normalizePortfolioBlock, type PortfolioClip, type PortfolioProject } from "@/lib/page-builder";
 import type { BlockProps, PortfolioBlockData } from "@/lib/sanity/block-types";
 
 const RATIO = {

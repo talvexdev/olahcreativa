@@ -27,7 +27,7 @@ export type PortfolioProject = {
   gallery?: PortfolioGalleryPhoto[];
 };
 
-/** Normalized portfolio block ready for render. */
+/** Normalized portafolio block ready for render. */
 export type PortfolioBlockViewModel = {
   eyebrow?: string;
   heading: string;

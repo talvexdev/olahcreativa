@@ -31,22 +31,20 @@ npm run dev
 npm run lint   # ESLint CLI (not next lint)
 ```
 
-Visit `/` for the public site, `/studio` for the CMS, `/contact` for the contact form.
+Visit `/` for the public site, `/portfolio` for the portfolio page, `/studio` for the CMS.
 
-### Test Cloudinary on `home-test`
+### Pages & page-builder
 
-After step 1 below (Studio configure + env vars):
+Studio has exactly two page singletons (no free-form pages):
 
-1. `/studio` → **Pages** → `home-test` → Portfolio block.
-2. On a project, set **Imagen principal** (or clip/gallery images) via the Cloudinary picker; fill **alt text** on each.
-3. **Publish** the page.
-4. Visit `/home-test` → DevTools → **Network** → filter `cloudinary` — you should see `res.cloudinary.com/{cloud_name}/…`.
-5. Quick checks elsewhere once content exists:
-   - **Site settings → Logo** → header shows the logo (thumbnail variant).
-   - **Project → Cover image** → homepage grid + `/work/[slug]`.
-   - **Image grid block** on any CMS page.
+| Studio | URL | What to edit |
+|--------|-----|----------------|
+| **Inicio (/)** | `/` | Page-builder modules for the site root |
+| **Portafolio (/portfolio)** | `/portfolio` | Page-builder modules for the portfolio route |
 
-If images stay as dashed placeholders, the Studio Cloudinary plugin is not configured yet, or the image has no alt text (schema blocks delivery).
+Open either page under **Páginas** in Studio and publish. Inicio seeds **Portada → Servicios → Proceso → Contacto** (edit or reorder as needed). Portafolio starts empty. Header/footer come from **Ajustes del sitio**, not from page modules.
+
+Agent conventions (folder layout, EN code / ES Studio labels, new modules): [`docs/AGENT-STANDARDS.md`](docs/AGENT-STANDARDS.md).
 
 ### Cloudinary setup checklist
 
@@ -55,8 +53,8 @@ If images stay as dashed placeholders, the Studio Cloudinary plugin is not confi
 | 1 | [cloudinary.com](https://cloudinary.com) | Create free account; note cloud name and API key |
 | 2 | `.env.local` | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` |
 | 3 | `/studio` | **Configure Cloudinary** on any image array → cloud name + API key (stored in dataset) |
-| 4 | `/studio` | Upload images on `home-test` portfolio, site settings logo, or a project cover |
-| 5 | Browser | Confirm `res.cloudinary.com` requests on publish |
+| 4 | `/studio` | Upload images on Inicio/Portafolio blocks, **Ajustes del sitio** logo, or a project cover |
+| 5 | Browser | Confirm `res.cloudinary.com` requests on `/` or `/portfolio` after publish |
 
 **Then Mux** (requires Cloudinary posters): configure Mux plugin in `/studio`, upload video + poster on a project or portfolio hero.
 
@@ -69,14 +67,15 @@ If images stay as dashed placeholders, the Studio Cloudinary plugin is not confi
 | `SANITY_API_WRITE_TOKEN` | Sanity → API → Tokens (Editor) — used by the media-cleanup webhook |
 | `SANITY_REVALIDATE_SECRET` | any long random string; also set as the webhook secret in Sanity |
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | cloudinary.com console — required for delivery URLs |
-| `RESEND_API_KEY` / `CONTACT_TO_EMAIL` | resend.com — for the `/contact` form |
+| `RESEND_API_KEY` / `CONTACT_TO_EMAIL` | resend.com — contact/brief block (`contactBlock`) |
+| `CONTACT_FROM_EMAIL` | optional; verified Resend domain sender. Falls back to `onboarding@resend.dev` |
 | `NEXT_PUBLIC_SITE_URL` | your production URL (e.g. `https://yourdomain.com`) — sitemap, robots, JSON-LD |
 
 ### One-time setup outside the code
 
 1. **Cloudinary in Studio** (required before any image field works):
    - `.env.local` needs `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`.
-   - Open `/studio` → edit any document with an image field (e.g. **Site settings** → Logo).
+   - Open `/studio` → edit any document with an image field (e.g. **Ajustes del sitio** → Logo).
    - On the image array toolbar, click **Configure Cloudinary** → enter **cloud name** + **API key only** (no secret in Studio).
    - Upload/select images via the Cloudinary Media Library picker. Every image needs **alt text** (required in schema).
    - Optional: create an unsigned upload preset in the [Cloudinary console](https://console.cloudinary.com) scoped to a folder (e.g. `portfolio/`) and set it in the Studio configure dialog.
@@ -90,18 +89,17 @@ If images stay as dashed placeholders, the Studio Cloudinary plugin is not confi
    `SANITY_REVALIDATE_SECRET`. Creates tombstone records when media is removed so
    editors have a 14-day grace window to restore before deleting assets in
    Cloudinary/Mux manually.
-4. **Create the `siteSettings` singleton** in the Studio once, populate the first
-   `project` documents, and add a nav link to `/contact` if desired.
+4. **Create Ajustes del sitio** once, then open **Páginas → Inicio** and
+   **Portafolio**, add/edit modules, and publish. Populate **Proyectos** as needed
+   for `/work/[slug]`.
 
 ## What's built vs. stubbed
 
 **Built and functional:**
-- Full Sanity schema (project, page, siteSettings, media-cleanup tombstone)
-- Page-builder system (hero, image grid, text, testimonial, CTA blocks) — new
-  block types are added in three places: the Sanity object schema, `page.ts`'s
-  `pageBuilder.of[]`, and the `BLOCKS` registry in `components/PageBuilder.tsx`
-- Homepage (tagline from `siteSettings`), project detail pages, flexible CMS-driven
-  pages, embedded Studio, `/contact` page with Resend Server Action
+- Full Sanity schema (proyecto, página, ajustes del sitio, media-cleanup tombstone)
+- Fixed page templates (Inicio `/`, Portafolio `/portfolio`) with page-builder
+  modules — see `docs/AGENT-STANDARDS.md` for the module checklist and folder layout
+- Project detail pages (`/work/[slug]`), embedded Studio
 - Cloudinary image pipeline with a fixed, named set of size variants (bounds
   transformation-credit usage — see below)
 - Mux video pipeline with lazy-mounted playback (bounds delivered-minutes usage)
@@ -112,10 +110,11 @@ If images stay as dashed placeholders, the Studio Cloudinary plugin is not confi
 - Sitemap (`/sitemap.xml`), robots (`/robots.txt`), and JSON-LD structured data
 
 **Not yet built (requires content / external setup):**
-- Real content — everything renders against whatever's in Sanity; the site is
-  empty until content is added in the Studio
-- Resend sender domain verification (the form uses `onboarding@resend.dev` until
-  you configure a verified domain in Resend)
+- Real content — everything renders against whatever's in Sanity; `/` and
+  `/portfolio` 404 until Inicio / Portafolio are published
+- Resend sender domain verification (contact/brief block uses
+  `onboarding@resend.dev` until you configure a verified domain)
+- Quiénes somos module (planned; not in the Inicio seed yet)
 
 ## Free-tier discipline (why the code looks the way it does)
 
@@ -128,8 +127,9 @@ free tiers, not just for code cleanliness — worth knowing before "simplifying"
   it silently re-queries Sanity on a schedule regardless of whether anything changed.
 - **Fixed image variants** (`lib/cloudinary/variants.ts`) instead of ad-hoc widths
   per usage — keeps Cloudinary transformation-credit usage bounded and predictable
-  as the site grows. Add new use cases in that file, then use `<CloudinaryImage variant="…" />`.
-- **Lazy-mounted video** (`MuxVideoPlayer`) — a video off-screen never streams,
+  as the site grows. Add new use cases in that file, then use
+  `<CloudinaryImage variant="…" />` from `@/components/media/cloudinary`.
+- **Lazy-mounted video** (`@/components/media/MuxVideoPlayer`) — off-screen video never streams,
   which is what keeps Mux delivered-minutes tied to real engagement.
 - **Tombstone tracking** on media cleanup gives editors a 14-day grace window
   to restore accidentally removed assets; delete orphaned Cloudinary/Mux files

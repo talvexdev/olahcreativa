@@ -2,11 +2,22 @@ import { defineType, defineField } from "sanity";
 
 export default defineType({
   name: "testimonialBlock",
-  title: "Testimonial",
+  title: "Testimonio",
   type: "object",
   fields: [
-    defineField({ name: "quote", title: "Quote", type: "text", rows: 3, validation: (R) => R.required() }),
-    defineField({ name: "attribution", title: "Attribution", type: "string", description: "e.g. \"Sarah & James, married Sept 2025\"" }),
+    defineField({
+      name: "quote",
+      title: "Cita",
+      type: "text",
+      rows: 3,
+      validation: (R) => R.required(),
+    }),
+    defineField({
+      name: "attribution",
+      title: "Atribución",
+      type: "string",
+      description: 'ej. "Cliente — marca"',
+    }),
   ],
   preview: { select: { title: "attribution", subtitle: "quote" } },
 });

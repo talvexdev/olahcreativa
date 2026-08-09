@@ -2,7 +2,7 @@ import { defineType, defineField } from "sanity";
 
 export default defineType({
   name: "servicesBlock",
-  title: "Servicios (tarjetas)",
+  title: "Servicios",
   type: "object",
   fields: [
     defineField({

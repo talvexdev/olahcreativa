@@ -19,22 +19,6 @@ export const siteSettingsQuery = groq`*[_type == "siteSettings"][0]{
   defaultSeoImage ${cloudinaryImageProjection}
 }`;
 
-export const homepageProjectsQuery = groq`*[_type == "project" && featured == true] | order(order asc){
-  _id,
-  title,
-  "slug": slug.current,
-  category,
-  coverImage ${cloudinaryImageProjection}
-}`;
-
-export const allProjectsQuery = groq`*[_type == "project"] | order(order asc){
-  _id,
-  title,
-  "slug": slug.current,
-  category,
-  coverImage ${cloudinaryImageProjection}
-}`;
-
 export const projectBySlugQuery = groq`*[_type == "project" && slug.current == $slug][0]{
   title,
   category,
@@ -52,7 +36,7 @@ export const projectBySlugQuery = groq`*[_type == "project" && slug.current == $
 
 export const allProjectSlugsQuery = groq`*[_type == "project" && defined(slug.current)]{ "slug": slug.current }`;
 
-export const pageBySlugQuery = groq`*[_type == "page" && slug.current == $slug][0]{
+const pageProjection = groq`{
   title,
   pageBuilder[]{
     ...,
@@ -99,4 +83,5 @@ export const pageBySlugQuery = groq`*[_type == "page" && slug.current == $slug][
   seoImage ${cloudinaryImageProjection}
 }`;
 
-export const allPageSlugsQuery = groq`*[_type == "page" && defined(slug.current)]{ "slug": slug.current }`;
+/** Fixed page singletons — fetch by document id (`homepage`, `pagePortfolio`). */
+export const pageByIdQuery = groq`*[_type == "page" && _id == $id][0]${pageProjection}`;

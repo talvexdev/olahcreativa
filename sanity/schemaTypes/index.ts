@@ -1,7 +1,7 @@
-import project from "./project";
-import page from "./page";
-import siteSettings from "./siteSettings";
-import mediaTombstone from "./mediaTombstone";
+import project from "./documents/project";
+import page from "./documents/page";
+import siteSettings from "./documents/siteSettings";
+import mediaTombstone from "./documents/mediaTombstone";
 
 import cloudinaryImage from "./objects/cloudinaryImage";
 import muxVideo from "./objects/muxVideo";

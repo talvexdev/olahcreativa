@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { BlockProps, HeroBlockData } from "@/lib/sanity/block-types";
 
 export function HeroBlock({ block }: BlockProps<HeroBlockData>) {
+  if (!block.heading) return null;
+
   return (
     <section className="relative mx-auto max-w-8xl px-6 pb-24 pt-32">
       {/* Soft red bloom from the design — decorative only. */}
