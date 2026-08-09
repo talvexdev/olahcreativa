@@ -1,3 +1,4 @@
+import { resolveSectionId } from "@/lib/page-builder/anchors";
 import type { BlockProps, ServiceItem, ServicesBlockData } from "@/lib/sanity/block-types";
 
 /**
@@ -17,9 +18,13 @@ export function ServicesBlock({ block }: BlockProps<ServicesBlockData>) {
   if (services.length === 0) return null;
 
   const columns = columnsFor(services.length);
+  const sectionId = resolveSectionId({
+    anchorId: block.anchorId,
+    fallback: "servicios",
+  });
 
   return (
-    <section id="servicios" className="mx-auto max-w-8xl px-6 py-28">
+    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-28">
       {block.eyebrow && (
         <p className="frame-label mb-8 flex items-center gap-3">
           <span className="block h-px w-8 bg-current" />

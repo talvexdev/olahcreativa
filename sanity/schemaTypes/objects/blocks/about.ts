@@ -1,8 +1,10 @@
 import { defineType, defineField } from "sanity";
 
+import { anchorIdField } from "../anchorId";
+
 /**
  * “Quiénes somos” — two-column about section: copy + brand mark.
- * Matches the reference landing layout (id #nosotros).
+ * Default in-page anchor: #nosotros.
  */
 export default defineType({
   name: "aboutBlock",
@@ -54,6 +56,7 @@ export default defineType({
       description: 'ej. "creativa"',
       initialValue: "creativa",
     }),
+    anchorIdField,
   ],
   preview: {
     select: { title: "heading", subtitle: "eyebrow" },

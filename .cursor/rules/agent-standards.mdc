@@ -12,4 +12,4 @@ Before implementing or reviewing features in this repo:
 1. **Read** `docs/AGENT-STANDARDS.md` and follow **all** sections.
 2. When standards change, edit **only** that file — not this rule, not `AGENTS.md`, not `CLAUDE.md` (those are pointers).
 
-Covers: language (EN code / ES Studio+UI), folder layout, fixed pages/templates, page-builder modules, Cloudinary/Mux, free-tier performance, responsive UI/UX, a11y, env/credentials.
+Covers: language (EN code / ES Studio+UI), folder layout, fixed pages/templates, seeding, site chrome (header/nav/footer/social), page-builder modules, section anchors, Cloudinary/Mux, free-tier performance, responsive UI/UX, a11y, env/credentials, reinforced guidelines §13.

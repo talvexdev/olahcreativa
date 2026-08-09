@@ -1,5 +1,7 @@
 import { defineType, defineField } from "sanity";
 
+import { anchorIdField } from "../anchorId";
+
 export default defineType({
   name: "servicesBlock",
   title: "Servicios",
@@ -59,6 +61,7 @@ export default defineType({
         },
       ],
     }),
+    anchorIdField,
   ],
   preview: {
     select: { title: "heading", subtitle: "eyebrow" },

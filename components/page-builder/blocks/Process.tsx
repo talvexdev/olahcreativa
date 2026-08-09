@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
+import { resolveSectionId } from "@/lib/page-builder/anchors";
 import type { BlockProps, ProcessBlockData, ProcessStep } from "@/lib/sanity/block-types";
 
 /** Where the playhead sits, as a CSS length. Driven by --p on the container. */
@@ -93,8 +94,13 @@ export function ProcessBlock({ block }: BlockProps<ProcessBlockData>) {
       isPast ? "border-accent" : "border-line"
     }`;
 
+  const sectionId = resolveSectionId({
+    anchorId: block.anchorId,
+    fallback: "proceso",
+  });
+
   return (
-    <section id="proceso" className="mx-auto max-w-8xl px-6 py-28">
+    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-28">
       {block.eyebrow && (
         <p className="frame-label mb-8 flex items-center gap-3">
           <span className="block h-px w-8 bg-current" />

@@ -1,3 +1,4 @@
+import { resolveSectionId } from "@/lib/page-builder/anchors";
 import type { BlockProps, AboutBlockData } from "@/lib/sanity/block-types";
 
 /**
@@ -14,10 +15,14 @@ export function AboutBlock({ block }: BlockProps<AboutBlockData>) {
   const brand = block.brandMark?.trim() || "Olah";
   const brandAccent = block.brandMarkAccent ?? ".";
   const brandSubtitle = block.brandMarkSubtitle?.trim();
+  const sectionId = resolveSectionId({
+    anchorId: block.anchorId,
+    fallback: "nosotros",
+  });
 
   return (
     <section
-      id="nosotros"
+      id={sectionId}
       className="border-t border-line bg-surface"
       aria-labelledby="about-heading"
     >

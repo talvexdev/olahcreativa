@@ -27,7 +27,9 @@ export const siteSettingsSeed: SiteSettingsSeedValue = {
   tagline: "Productora audiovisual · foto & video",
   navLinks: [
     { label: "Inicio", href: "/" },
+    { label: "Quiénes somos", href: "/#nosotros" },
     { label: "Servicios", href: "/#servicios" },
+    { label: "Proceso", href: "/#proceso" },
     { label: "Portafolio", href: "/portfolio" },
     { label: "Contacto", href: "/#contacto" },
   ],
@@ -198,6 +200,7 @@ export const portfolioPageSeed: PageSeedValue = {
       heading: "Portafolio",
       description:
         "Una selección de piezas recientes. Seguimos sumando proyectos a este espacio.",
+      anchorId: "portafolio",
       projects: [],
     },
     {

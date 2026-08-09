@@ -2,10 +2,9 @@ import Link from "next/link";
 
 import { CloudinaryImage } from "@/components/media/cloudinary";
 import { HeaderShell } from "@/components/site/HeaderShell";
+import { SiteNav, type SiteNavLink } from "@/components/site/SiteNav";
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import type { SanityCloudinaryImage } from "@/lib/cloudinary";
-
-type NavLink = { label: string; href: string };
 
 export function Header({
   brandName,
@@ -14,7 +13,7 @@ export function Header({
 }: {
   brandName: string;
   logo?: SanityCloudinaryImage | null;
-  navLinks?: NavLink[];
+  navLinks?: SiteNavLink[];
 }) {
   return (
     <HeaderShell>
@@ -37,17 +36,7 @@ export function Header({
             brandName
           )}
         </Link>
-        <nav className="flex gap-4 sm:gap-8">
-          {(navLinks || []).map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="frame-label text-muted transition-colors hover:text-fg"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        <SiteNav links={navLinks ?? []} />
         <ThemeToggle />
       </div>
     </HeaderShell>

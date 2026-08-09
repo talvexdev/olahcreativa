@@ -26,3 +26,5 @@ export {
   type HeroShowcaseClip,
   type HeroShowcaseView,
 } from "./hero";
+
+export { resolveSectionId, slugifyAnchor } from "./anchors";

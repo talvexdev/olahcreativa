@@ -1,7 +1,12 @@
 import { CloudinaryImage } from "@/components/media/cloudinary";
 import { MuxVideoPlayer } from "@/components/media/MuxVideoPlayer";
 import { hasCloudinaryAsset, toCloudinaryPoster } from "@/lib/cloudinary";
-import { normalizePortfolioBlock, type PortfolioClip, type PortfolioProject } from "@/lib/page-builder";
+import {
+  normalizePortfolioBlock,
+  resolveSectionId,
+  type PortfolioClip,
+  type PortfolioProject,
+} from "@/lib/page-builder";
 import type { BlockProps, PortfolioBlockData } from "@/lib/sanity/block-types";
 
 const RATIO = {
@@ -194,8 +199,16 @@ export function PortfolioBlock({ block }: BlockProps<PortfolioBlockData>) {
   const view = normalizePortfolioBlock(block);
   if (!view) return null;
 
+  const sectionId = resolveSectionId({
+    anchorId: block.anchorId,
+    fallback: "portafolio",
+    key: block._key,
+    // Extra Portafolio modules without a custom ancla stay unique in the DOM.
+    uniquifyFallback: !block.anchorId,
+  });
+
   return (
-    <section id="portafolio" className="mx-auto max-w-8xl px-6 py-28">
+    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-28">
       {view.eyebrow && (
         <p className="frame-label mb-8 flex items-center gap-3">
           <span className="block h-px w-8 bg-current" />

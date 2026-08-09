@@ -30,6 +30,7 @@ export type AboutBlockData = {
   brandMark?: string;
   brandMarkAccent?: string;
   brandMarkSubtitle?: string;
+  anchorId?: string;
 };
 
 export type ImageGridBlockData = {
@@ -47,6 +48,7 @@ export type PortfolioBlockData = {
   heading?: string;
   headingAccent?: string;
   description?: string;
+  anchorId?: string;
   projects?: unknown[];
 };
 
@@ -95,6 +97,7 @@ export type ProcessBlockData = {
   heading?: string;
   headingAccent?: string;
   steps?: ProcessStep[];
+  anchorId?: string;
 };
 
 export type ServiceItem = {
@@ -110,6 +113,7 @@ export type ServicesBlockData = {
   heading?: string;
   headingAccent?: string;
   services?: ServiceItem[];
+  anchorId?: string;
 };
 
 export type ContactBlockData = {
@@ -123,6 +127,7 @@ export type ContactBlockData = {
   formTitle?: string;
   interests?: string[];
   submitLabel?: string;
+  anchorId?: string;
 };
 
 export type PageBuilderBlock =

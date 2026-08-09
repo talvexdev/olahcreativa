@@ -13,13 +13,14 @@ Edit that file when conventions change. Do not duplicate standards in `.cursor/r
 ## Quick orientation
 
 - **Stack:** Next.js 16 · Sanity Studio · Cloudinary · Mux · Tailwind v4 · Vercel
-- **Human setup:** `README.md` (accounts, env, webhooks)
+- **Human setup:** `README.md` (accounts, env, webhooks, `npm run seed:pages`)
 - **Language:** English code/files/`_type`; Spanish Studio labels + user-facing copy
-- **Layout:** `components/{site,media,forms,page-builder}` · `lib/{sanity,cloudinary,mux,page-builder,media-cleanup}`
-- **Images:** `components/media/cloudinary/CloudinaryImage.tsx` + `lib/cloudinary/`
-- **Video:** `components/media/MuxVideoPlayer.tsx`
-- **Fixed pages:** Inicio `/` (`homepage`) · Portafolio `/portfolio` (`pagePortfolio`) — `sanity/lib/templates.ts`
-- **New CMS block:** English `_type` + files; Spanish Studio `title` — schema → `documents/page.ts` → `pageByIdQuery` → `page-builder/blocks` → `PageBuilder.tsx`
+- **Layout:** `components/{site,media,forms,page-builder}` · `lib/{sanity,cloudinary,mux,page-builder,site,media-cleanup}`
+- **Images / video:** `CloudinaryImage` · `MuxVideoPlayer`
+- **Fixed pages:** Inicio `/` (`homepage`) · Portafolio `/portfolio` (`pagePortfolio`)
+- **Seed:** `sanity/lib/page-seed.ts` + `npm run seed:pages` (site settings + both pages)
+- **Chrome:** Header/footer from `siteSettings`; curated `SiteNav`; section anchors via `resolveSectionId` / **Ancla (URL)**
+- **New CMS block:** English `_type` + files; Spanish Studio `title` — schema → `documents/page.ts` → `pageByIdQuery` → `page-builder/blocks` → `PageBuilder.tsx` (+ seed/anchors/media-cleanup if needed)
 
 ## Cursor
 

@@ -14,13 +14,12 @@ Built to stay inside every vendor's free tier by design — see "Free-tier disci
 
 ## Design direction
 
-"Light table / contact sheet" — a darkroom review table, not a generic dark-mode
-portfolio template. Warm charcoal-green background (`#1B1F1A`), archival paper
-foreground (`#EFEBE2`), a single muted brass accent (`#A9793B`) used sparingly.
-Display type is Fraunces (editorial serif), body is Inter, captions/frame-numbers
-are IBM Plex Mono — evoking contact-sheet frame labels and EXIF data, which is
-also the site's signature element (`frame-label` class, used throughout).
-Design tokens live in `app/globals.css` (`@theme` block).
+Brand site with light/dark themes driven by CSS variables in `app/globals.css`
+(`--bg`, `--surface`, `--card`, `--fg`, `--muted`, `--line`, `--accent`, `--wash`).
+Accent is brand red; use theme tokens in UI (no one-off hex in features).
+Display type is Fraunces, body Inter, mono IBM Plex Mono — signature `frame-label`
+eyebrow style throughout. Sticky header height is published as `--site-header-height`
+for full-viewport sections and hash scroll padding.
 
 ## Getting started
 
@@ -50,9 +49,17 @@ npm run seed:pages -- --dry-run # preview only
 npm run seed:pages -- --force   # overwrite published + drop matching drafts
 ```
 
-Requires `SANITY_API_WRITE_TOKEN` in `.env.local`. Shared copy lives in `sanity/lib/page-seed.ts`. Inicio: **Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto**. Portafolio: **Portafolio → Contacto** (add more Portafolio modules below the first in the page builder as needed). Header/footer come from **Ajustes del sitio** on every page (seeded with the script). Add media in the CMS editor afterward.
+Requires `SANITY_API_WRITE_TOKEN` in `.env.local`. Shared copy lives in `sanity/lib/page-seed.ts`.
 
-Agent conventions (folder layout, EN code / ES Studio labels, new modules): [`docs/AGENT-STANDARDS.md`](docs/AGENT-STANDARDS.md).
+| Seed target | Contents |
+|-------------|----------|
+| **Ajustes del sitio** | Brand, curated nav, contact email, social networks (footer icons) |
+| **Inicio** | Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto |
+| **Portafolio** | Portafolio (`#portafolio`) → Contacto (add more Portafolio modules below as needed) |
+
+**Default nav:** Inicio · Quiénes somos · Servicios · Proceso · Portafolio · Contacto (edit under Ajustes del sitio). Section anchors are hash targets on Inicio; Portafolio is its own route. Add media (logo, showcase clips, projects) in the CMS after seeding.
+
+Agent conventions: [`docs/AGENT-STANDARDS.md`](docs/AGENT-STANDARDS.md).
 
 ### Cloudinary setup checklist
 
@@ -72,7 +79,7 @@ Agent conventions (folder layout, EN code / ES Studio labels, new modules): [`do
 |---|---|
 | `NEXT_PUBLIC_SANITY_PROJECT_ID` / `NEXT_PUBLIC_SANITY_DATASET` | sanity.io/manage — create a free project |
 | `SANITY_API_READ_TOKEN` | Sanity → API → Tokens (Viewer) |
-| `SANITY_API_WRITE_TOKEN` | Sanity → API → Tokens (Editor) — used by the media-cleanup webhook |
+| `SANITY_API_WRITE_TOKEN` | Sanity → API → Tokens (Editor) — media-cleanup webhook + `npm run seed:pages` |
 | `SANITY_REVALIDATE_SECRET` | any long random string; also set as the webhook secret in Sanity |
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | cloudinary.com console — required for delivery URLs |
 | `RESEND_API_KEY` / `CONTACT_TO_EMAIL` | resend.com — contact/brief block (`contactBlock`) |
