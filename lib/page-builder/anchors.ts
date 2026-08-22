@@ -2,6 +2,12 @@
 
 const SLUG_RE = /[^a-z0-9]+/g;
 
+/** Default HTML id for Portada (`heroBlock`) — first header tab target. */
+export const HERO_SECTION_ID = "portada";
+
+/** Leftover Inicio hash (`/#inicio`) — same module as `HERO_SECTION_ID`. */
+export const HERO_SECTION_ALIAS_ID = "inicio";
+
 /** Normalize CMS / fallback values into a safe HTML id fragment. */
 export function slugifyAnchor(raw: string): string {
   return raw

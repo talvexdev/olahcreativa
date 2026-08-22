@@ -14,6 +14,10 @@ const RATIO = {
   portrait: "aspect-[3/4]",
 } as const;
 
+const SIZES_HERO = "(max-width: 1536px) 100vw, 1536px";
+const SIZES_CLIPS = "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw";
+const SIZES_PORTRAIT = "(max-width: 639px) 224px, 256px";
+
 function MediaFrame({
   ratio = "video",
   badge,
@@ -81,7 +85,7 @@ function ClipMedia({ clip, title }: { clip: PortfolioClip; title?: string }) {
         playbackId={clip.video.playbackId}
         status={clip.video.status}
         poster={toCloudinaryPoster(clip.video.poster)}
-        autoplayMuted={clip.video.autoplayMuted ?? true}
+        autoplayMuted={clip.video.autoplayMuted ?? false}
         title={title}
         fillContainer
         posterVariant="grid"
@@ -90,7 +94,7 @@ function ClipMedia({ clip, title }: { clip: PortfolioClip; title?: string }) {
   }
 
   if (hasCloudinaryAsset(clip.image)) {
-    return <CloudinaryImage image={clip.image} variant="grid" />;
+    return <CloudinaryImage image={clip.image} variant="grid" sizes={SIZES_CLIPS} />;
   }
 
   return null;
@@ -115,7 +119,12 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
           />
         ) : hasCloudinaryAsset(project.heroImage) ? (
           <MediaFrame>
-            <CloudinaryImage image={project.heroImage} variant="hero" priority={index === 0} />
+            <CloudinaryImage
+              image={project.heroImage}
+              variant="hero"
+              sizes={SIZES_HERO}
+              priority={index === 0}
+            />
           </MediaFrame>
         ) : (
           <MediaFrame note="Video principal · 16:9">
@@ -123,7 +132,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
           </MediaFrame>
         )}
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg via-bg/80 to-transparent px-8 pb-8 pt-24">
+        <div className="px-4 py-6 sm:px-8 lg:pointer-events-none lg:absolute lg:inset-x-0 lg:bottom-0 lg:bg-gradient-to-t lg:from-bg lg:via-bg/80 lg:to-transparent lg:px-8 lg:pb-8 lg:pt-24">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">
             {label}
             {project.category && <span className="text-muted"> · {project.category}</span>}
@@ -132,7 +141,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
         </div>
       </div>
 
-      <div className="bg-surface px-8 py-10">
+      <div className="bg-surface px-4 py-10 sm:px-8">
         {project.description && (
           <p className="max-w-[62ch] text-lg leading-relaxed">{project.description}</p>
         )}
@@ -146,7 +155,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
         )}
 
         {clips.length > 0 && (
-          <ul className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {clips.map((clip, i) => (
               <li key={i}>
                 <MediaFrame
@@ -183,7 +192,11 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
                     className="rounded-xl"
                     badge={photo.label || String(i + 1).padStart(2, "0")}
                   >
-                    <CloudinaryImage image={photo.image} variant="portrait" />
+                    <CloudinaryImage
+                      image={photo.image}
+                      variant="portrait"
+                      sizes={SIZES_PORTRAIT}
+                    />
                   </MediaFrame>
                 </li>
               ))}

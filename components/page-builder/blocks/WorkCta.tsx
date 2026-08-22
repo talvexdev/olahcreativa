@@ -39,11 +39,10 @@ function WorkCtaLink({ href, label }: { href: string; label: string }) {
 }
 
 /**
- * Full-width work CTA banner — bordered row with copy + solid button.
- * Theme tokens only so light/dark stay consistent with the rest of the site.
- *
- * Sits in the reduced gap between Servicios (`pb-12`) and Proceso (`pt-12`).
- * Do not use negative margins — they overlap neighbors and break hash scroll.
+ * Full-width work CTA banner.
+ * Same section fill as Inicio bands (Quiénes somos / Contacto): `bg-surface`
+ * on page `bg`, so it doesn’t read as another Portafolio `bg-card` tile.
+ * Compact module rhythm (`py-12` / `lg:py-16`) between full `py-28` sections.
  */
 export function WorkCtaBlock({ block }: BlockProps<WorkCtaBlockData>) {
   if (!block.heading) return null;
@@ -53,10 +52,10 @@ export function WorkCtaBlock({ block }: BlockProps<WorkCtaBlockData>) {
 
   return (
     <section
-      className="mx-auto max-w-8xl px-6"
+      className="border-t border-line bg-surface py-12 lg:py-16"
       aria-labelledby="work-cta-heading"
     >
-      <div className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-line bg-card p-7 sm:gap-8 sm:p-9 lg:flex-row lg:items-center lg:gap-10">
+      <div className="mx-auto flex max-w-8xl flex-col items-start justify-between gap-6 px-6 sm:gap-8 lg:flex-row lg:items-center lg:gap-10">
         <div className="min-w-0 flex-1">
           <h2
             id="work-cta-heading"

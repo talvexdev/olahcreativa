@@ -109,12 +109,14 @@ Constants: `HOME_PAGE_ID` / `PORTFOLIO_PAGE_ID` in `lib/sanity/page-slugs.ts`. F
 
 | Page | `pageBuilder` order |
 |------|---------------------|
-| Inicio | Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto |
-| Portafolio | Portafolio → Contacto (editors may insert more `portfolioBlock`s below the first) |
+| Inicio | Portada → Quiénes somos → Servicios → Proceso → Contacto |
+| Portafolio | Portafolio → Más trabajos → Contacto (editors may insert more `portfolioBlock`s below the first) |
 
-`_type` chain (Inicio): `heroBlock` → `aboutBlock` → `servicesBlock` → `workCtaBlock` → `processBlock` → `contactBlock`.
+`_type` chain (Inicio): `heroBlock` → `aboutBlock` → `servicesBlock` → `processBlock` → `contactBlock`.
 
-Portafolio is **not** part of the Inicio seed.
+`_type` chain (Portafolio): `portfolioBlock` → `workCtaBlock` → `contactBlock`. `/portfolio` inserts Más trabajos after the first Portafolio module when the CMS document is missing it.
+
+Portafolio is **not** part of the Inicio seed. Más trabajos (`workCtaBlock`) is **not** on Inicio — the `/` route also drops leftover `workCtaBlock`s so an old published document cannot keep rendering that module.
 
 ---
 
@@ -150,23 +152,26 @@ If `brandName` is missing, UI falls back to **"Olah Creativa"** — never a gene
 - `html { scroll-padding-top: var(--site-header-height); }` for hash links under the sticky bar.
 - Put section `id`s on the **outer module** (`<section>`) so hash nav includes top spacing; `scroll-padding-top` clears the sticky header.
 - `SiteNav` manually `scrollIntoView`s same-page hash clicks (Next may not re-scroll).
-- Portada (and any full-viewport module) uses `min-height: calc(100dvh - var(--site-header-height))` with a `100vh` fallback — **do not** hardcode rem guesses for header height.
+- Portada (and any full-viewport module) is `min-height: 100dvh` and sits **under** the sticky header: `-mt-[var(--site-header-height)]` + matching top padding so copy isn’t hidden. `#portada` starts at y = 0. This overlap is header chrome only — do not pull modules over each other.
 
 ### Navigation (curated, flat)
 
 - Editors manage links in **Ajustes del sitio → Enlaces de navegación** (label + href).
 - Keep a **short flat list** (about 4–6 items). Prefer hash links to Inicio sections and a route to `/portfolio`.
-- **Default seed nav:** Inicio `/` · Quiénes somos `/#nosotros` · Servicios `/#servicios` · Proceso `/#proceso` · Portafolio `/portfolio` · Contacto `/#contacto`.
+- **Default seed nav:** Portada `/#portada` · Quiénes somos `/#nosotros` · Servicios `/#servicios` · Proceso `/#proceso` · Portafolio `/portfolio` · Contacto `/#contacto`.
 - **Do not** auto-build the header from every page-builder block.
 - **Do not** add nested submenus for repeated modules by default. If a second Portafolio block must be reachable, give it a distinct **Ancla (URL)** and optionally add one curated nav link — only when the destination is meaningfully different.
-- `SiteNav` (`components/site/SiteNav.tsx`): scroll-spy highlights same-page hash targets with `text-accent` + `aria-current`; page routes activate by pathname.
+- `SiteNav` (`components/site/SiteNav.tsx`): scroll-spy highlights same-page hash targets with `text-accent` + `aria-current`; page routes activate by pathname. Do **not** put `frame-label` on nav links (`frame-label` bakes `text-accent`, so inactive tabs cannot dim).
+- At the **top of `/`** (including scroll-back and rubber-band), the home tab is active. Live CMS may still label it **Inicio** with href `/`. Spy ids: `#portada` (required on the Hero `<section>`), leftover `#inicio` inside it. If `#portada` is missing, the first `<section>` in `<main>` is used. Logic: `lib/site/nav-spy.ts`.
+- Click-lock (~1.2s) stops intermediate sections flashing; it **expires on a timer and re-syncs** so a scroll-back after a click still updates. Home-tab and brand-mark clicks scroll to `scrollY = 0`.
+- Brand mark (`BrandLink`) targets `/#portada` and, on `/`, preventDefault + scroll-to-top so the header overlaying Portada still counts as Inicio.
 
 ### Section anchors
 
 - Navigable sections use `resolveSectionId()` from `lib/page-builder/anchors.ts`.
 - Optional CMS field **Ancla (URL)** (`anchorId` via shared `anchorIdField`) on: Quiénes somos, Servicios, Proceso, Contacto, Portafolio.
-- Defaults: `nosotros`, `servicios`, `proceso`, `contacto`, `portafolio`.
-- Repeated Portafolio modules without a custom ancla get a uniquified id (`portafolio-{key}`). First Portafolio in seed sets `anchorId: "portafolio"`.
+- Defaults: `portada`, `nosotros`, `servicios`, `proceso`, `contacto`, `portafolio`.
+- Repeated Portafolio modules without a custom ancla get a uniquified id (`portafolio-{key}`). First Portafolio in seed sets `anchorId: "portafolio"`. Inicio seed sets `nosotros`, `servicios`, `proceso`, `contacto`. Header nav home tab: **Portada** `/#portada` (seed) or leftover **Inicio** `/`. Hero DOM ids: `portada` + alias `inicio`.
 - Anclas: lowercase, numbers, hyphens only (`portafolio-eventos`).
 
 ### Footer social icons
@@ -185,7 +190,7 @@ Studio labels Spanish; code/files/`_type` English:
 
 | Studio title | `_type` | Schema | Component | Default anchor |
 |---|---|---|---|---|
-| Portada | `heroBlock` | `hero.ts` | `Hero.tsx` | — (first viewport) |
+| Portada | `heroBlock` | `hero.ts` | `Hero.tsx` | `portada` |
 | Quiénes somos | `aboutBlock` | `about.ts` | `About.tsx` | `nosotros` |
 | Servicios | `servicesBlock` | `services.ts` | `Services.tsx` | `servicios` |
 | Más trabajos | `workCtaBlock` | `workCta.ts` | `WorkCta.tsx` | — (bridge CTA) |
@@ -227,22 +232,27 @@ Studio labels Spanish; code/files/`_type` English:
 
 ### Portada (`heroBlock`)
 
-- Fills the first viewport under the sticky header (`100dvh` − `--site-header-height`); use `min-height`, not a fixed height, so mobile content can grow.
+- Fills the first viewport (`100dvh`, `100vh` fallback) and sits **under** the sticky header: `-mt-[var(--site-header-height)]` plus top padding that includes that height so copy/media start below the bar. Use `min-height`, not a fixed height, so mobile content can grow.
+- Section `id` is the literal **`portada`** on the outer `<section>` (must match `HERO_SECTION_ID`). Also emit a zero-size **`inicio`** alias inside it so leftover `/#inicio` hashes resolve. After changing Hero, **`npm run build`** then restart `npm start` — `next start` will not pick up source-only edits.
 - Optional `showcaseClips` (max 3, Mux + Cloudinary poster or image). **No** highlight/stat card in Portada.
 - Heading is `<h2>` — the page’s single accessible `<h1>` stays the `CmsPage` sr-only heading.
 - CTAs stack full-width on small screens.
 
 ### Más trabajos (`workCtaBlock`)
 
-- **Bridge** between Servicios and Proceso: no full `py-28`, and **no negative margins** (they overlap neighbors and break hash scroll / scroll-spy).
-- Neighbors own the gap: Servicios `pt-28 pb-12`, Proceso `pt-12 pb-28`; the CTA sits in that space with no extra vertical padding of its own.
+- Compact **bridge** after Portafolio on `/portfolio`, before Contacto: `py-12 lg:py-16` (not full `py-28`), and **no negative margins**.
+- Full-bleed **`bg-surface`** + `border-t border-line` — same pair as Inicio (page `bg` vs band `bg-surface`). Do not use `bg-wash` as a section fill.
 - External `http(s)` → `target="_blank"`; `mailto:` / `tel:` same tab; `/` and `#` → Next `Link`.
+
+### Portafolio (`portfolioBlock`)
+
+- Full section rhythm `py-28` (repeatable module; Más trabajos owns its own compact padding).
 
 ### Servicios
 
 - Typical seed: **4** cards in 2×2 on large screens (`columnsFor(4) === 2`).
 - Badges like “Servicio principal” / “Servicio complementario” (not only PLANO 01…).
-- When followed by Más trabajos: use `pt-28 pb-12` (not symmetric `py-28`).
+- Symmetric `py-28` (Más trabajos is not on Inicio).
 
 ### Contacto + BriefForm
 
@@ -317,11 +327,17 @@ Page templates: only `page-homepage` and `page-portfolio`. Hide blank page creat
 import { CloudinaryImage } from "@/components/media/cloudinary";
 import { normalizeCloudinaryImage, cloudinaryImageUrl } from "@/lib/cloudinary";
 
-<CloudinaryImage image={normalizeCloudinaryImage(block.photo)} variant="grid" />
+<CloudinaryImage
+  image={normalizeCloudinaryImage(block.photo)}
+  variant="grid"
+  sizes="(max-width: 639px) 100vw, 50vw"
+/>
 cloudinaryImageUrl(publicId, "lightbox"); // lightbox / Mux placeholder only
 ```
 
-### Variants (add sizes **only** in `lib/cloudinary/variants.ts`)
+### Variants (max **width** only in `lib/cloudinary/variants.ts`)
+
+Transform caps live in `variants.ts`. Layout **`sizes`** is per slot — pass it into `<CloudinaryImage sizes="…" />` so the browser picks the right srcset candidate (ImageGrid 2-col at `sm`, hero 3-col primary vs sides, logo at 160px). Variant `sizes` strings are fallbacks only.
 
 | Variant | Width | Typical use |
 |---------|-------|-------------|
@@ -351,6 +367,8 @@ SEO: `openGraphFromCloudinaryImage()` / `cloudinarySeoUrl()`.
 - Use `@mux/mux-player-react/lazy` with `loading="viewport"` via `MuxVideoPlayer`.
 - `preload="none"`, `capRenditionToPlayerSize`, poster via Cloudinary.
 - `autoplayMuted` only for short decorative loops (hero showcase / portfolio tiles).
+- `fillContainer` tiles: Mux `--media-object-fit: cover` (match Cloudinary `object-cover`). Editorial 16:9 players: `contain`.
+- Small viewports: one muted autoplay max (`allowMobileAutoplay` on the first Portada clip only). Honor `prefers-reduced-motion` in `MuxVideoPlayer` (not only CSS).
 - Do not embed raw `stream.mux.com` or use `image.mux.com` for posters.
 
 Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-builder`.
@@ -387,19 +405,19 @@ Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-bui
 ### Layout conventions
 
 - Gutter `px-6`; max width `max-w-8xl` centered.
-- Full section rhythm `py-16`–`py-28`; **bridge** modules (Más trabajos) sit in reduced neighbor padding (`pb-12` / `pt-12`) — don’t stack three `py-28`s and don’t use negative margins.
+- Full section rhythm `py-16`–`py-28`; **bridge** modules (Más trabajos) use compact `py-12 lg:py-16` between full `py-28` neighbors — don’t stack three `py-28`s and don’t use negative margins.
 - Typography: prefer `text-hero` / clamp for display headings.
 - Grids: `grid-cols-1` → `sm:grid-cols-2` → `lg:grid-cols-3/4`; Servicios with 4 cards → 2×2.
-- Full-viewport heroes: `svh`/`dvh` + measured `--site-header-height`; allow growth on small screens (`min-h`, not fixed `h`).
+- Full-viewport heroes: `100dvh` sitting under the sticky header (`-mt` + content `pt` using `--site-header-height`); allow growth on small screens (`min-h`, not fixed `h`).
 
 ### Touch, images, video, motion
 
 - Tap targets ~44×44px for primary controls (including footer social icons).
 - Horizontal scroll: `snap-x snap-mandatory`, `overflow-x-auto`, focus-visible ring.
-- Always aspect-ratio wrappers to prevent CLS; use `<CloudinaryImage variant="…" />`.
+- Always aspect-ratio wrappers to prevent CLS; use `<CloudinaryImage variant="…" sizes="…" />`.
 - `priority={true}` only for LCP candidates.
-- Video: `aspect-video` on small screens; one muted autoplay max on small viewports when possible.
-- Respect `prefers-reduced-motion` (global in `globals.css`).
+- Video: `aspect-video` on small screens; one muted autoplay max on small viewports when possible (`allowMobileAutoplay` on the first Portada clip).
+- Respect `prefers-reduced-motion` (global CSS **and** Mux autoplay gate in `MuxVideoPlayer`).
 
 ---
 
@@ -434,7 +452,7 @@ Use these when implementing or reviewing work:
 1. **Single source of truth for copy/structure** — change seed content in `page-seed.ts`; templates and CLI consume it. Don’t fork duplicate Spanish strings in three places.
 2. **Curated nav over generated nav** — header links stay editor-owned; section modules expose stable anchors instead of auto-injecting menu items.
 3. **Measure chrome, don’t guess** — sticky header height via `HeaderShell` / `--site-header-height` for full-viewport layouts and scroll padding.
-4. **Bridge vs section rhythm** — interstitial CTAs (Más trabajos) must not use the same vertical padding as major sections.
+4. **Bridge vs section rhythm** — interstitial CTAs (Más trabajos) use compact `py-12`/`lg:py-16`, not the same `py-28` as major sections, and not a one-sided `pb-12` on the neighbor.
 5. **Theme tokens only** — every new UI surface must work in light and dark; prefer `border-line`, `text-muted`, `text-accent`, `bg-wash`, `currentColor` icons.
 6. **Accessible icon links** — footer (and similar) brand icons need visible hit area (~40px), `aria-label`, and `rel="noreferrer"` on external targets.
 7. **Seed is opt-in overwrite** — default create-if-missing; `--force` only when intentionally resetting CMS content.
@@ -465,7 +483,7 @@ Use these when implementing or reviewing work:
 - Store Cloudinary API secret in Studio
 - Enable Mux Plus/Premium, DRM, static MP4, or 4K without approval
 - Skip `lib/media-cleanup/extract.ts` when adding removable CMS media
-- Invent breakpoints or image widths outside `variants.ts` / Tailwind scale
+- Invent breakpoints or Cloudinary transform widths outside `variants.ts` / Tailwind scale (`sizes` hints are per layout, not new variants)
 - Ship blocks without mobile layout, light/dark, and a11y checks
 - Nest vendor packages under a catch-all `lib/media/`
 - Fall back brand name to “Studio” or other generic placeholders
@@ -478,6 +496,10 @@ When you change a standard, edit **this file** and add a one-line note below.
 
 | Date | Change |
 |------|--------|
+| 2026-08-22 | Más trabajos section fill: `bg-surface` + `border-t` (Inicio band colors, not `bg-wash`) |
+| 2026-08-22 | Más trabajos (`workCtaBlock`) moved from Inicio seed to Portafolio, after `portfolioBlock` |
+| 2026-08-22 | Header nav: Portada `/#portada` (Hero) instead of Inicio `/`; scroll-spy tracks `#portada` |
+| 2026-08-22 | Media fit: layout `sizes` on `CloudinaryImage`; Mux cover vs contain; one mobile autoplay |
 | 2026-08-09 | Docs overhaul: seeding, site chrome/nav/anchors/social icons, module layout rules, reinforced guidelines §13 |
 | 2026-08-09 | Curated header nav + section anchors (`anchorId`, `SiteNav` scroll-spy); nav seed matches Inicio/Portafolio |
 | 2026-08-09 | Portafolio seed: portfolio + contact; seed siteSettings for header/footer; remove “Studio” brand fallback |

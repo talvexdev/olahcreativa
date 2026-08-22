@@ -13,7 +13,7 @@ export const pageTemplates: Template[] = [
     id: "page-homepage",
     title: "Inicio",
     description:
-      "Raíz (/). Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto. Header/footer globales.",
+      "Raíz (/). Portada → Quiénes somos → Servicios → Proceso → Contacto. Header/footer globales.",
     schemaType: "page",
     value: homepagePageSeed,
   },
@@ -21,7 +21,7 @@ export const pageTemplates: Template[] = [
     id: "page-portfolio",
     title: "Portafolio",
     description:
-      "Ruta /portfolio. Portafolio → Contacto; puedes añadir más módulos Portafolio debajo del primero. Header/footer globales.",
+      "Ruta /portfolio. Portafolio → Más trabajos → Contacto; puedes añadir más módulos Portafolio debajo del primero. Header/footer globales.",
     schemaType: "page",
     value: portfolioPageSeed,
   },

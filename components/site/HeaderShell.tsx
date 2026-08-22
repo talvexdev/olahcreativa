@@ -4,7 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 
 /**
  * Publishes the sticky header’s real height as `--site-header-height` so
- * full-viewport sections (Portada) can fill exactly what’s left under it —
+ * Portada can sit under it (`-mt` + matching `pt`) and fill `100dvh` —
  * including when the nav wraps on mobile/tablet.
  */
 export function HeaderShell({ children }: { children: ReactNode }) {

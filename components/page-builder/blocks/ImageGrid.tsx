@@ -1,9 +1,14 @@
 import { CloudinaryImage } from "@/components/media/cloudinary";
-import { getImageGridColumnClass, normalizeImageGridItems } from "@/lib/page-builder";
+import {
+  getImageGridColumnClass,
+  getImageGridSizes,
+  normalizeImageGridItems,
+} from "@/lib/page-builder";
 import type { BlockProps, ImageGridBlockData } from "@/lib/sanity/block-types";
 
 export function ImageGridBlock({ block }: BlockProps<ImageGridBlockData>) {
   const items = normalizeImageGridItems(block.items);
+  const sizes = getImageGridSizes(block.columns);
 
   return (
     <section className="mx-auto max-w-8xl px-6 py-16">
@@ -11,7 +16,7 @@ export function ImageGridBlock({ block }: BlockProps<ImageGridBlockData>) {
       <div className={`grid grid-cols-1 gap-4 ${getImageGridColumnClass(block.columns)}`}>
         {items.map((image, i) => (
           <div key={image.publicId + i} className="relative aspect-[4/5] overflow-hidden">
-            <CloudinaryImage image={image} variant="grid" />
+            <CloudinaryImage image={image} variant="grid" sizes={sizes} />
           </div>
         ))}
       </div>

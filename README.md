@@ -54,8 +54,8 @@ Requires `SANITY_API_WRITE_TOKEN` in `.env.local`. Shared copy lives in `sanity/
 | Seed target | Contents |
 |-------------|----------|
 | **Ajustes del sitio** | Brand, curated nav, contact email, social networks (footer icons) |
-| **Inicio** | Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto |
-| **Portafolio** | Portafolio (`#portafolio`) → Contacto (add more Portafolio modules below as needed) |
+| **Inicio** | Portada → Quiénes somos → Servicios → Proceso → Contacto |
+| **Portafolio** | Portafolio (`#portafolio`) → Más trabajos → Contacto (add more Portafolio modules below as needed) |
 
 **Default nav:** Inicio · Quiénes somos · Servicios · Proceso · Portafolio · Contacto (edit under Ajustes del sitio). Section anchors are hash targets on Inicio; Portafolio is its own route. Add media (logo, showcase clips, projects) in the CMS after seeding.
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import MuxPlayer from "@mux/mux-player-react/lazy";
 
 import { CloudinaryImage } from "@/components/media/cloudinary";
@@ -16,27 +17,59 @@ type Props = {
   status?: MuxAssetStatus;
   poster?: CloudinaryPoster | null;
   autoplayMuted?: boolean;
+  /**
+   * When `autoplayMuted` is on, also loop on viewports below `lg`.
+   * Only the first Portada clip should pass true so small screens get one autoplay max.
+   */
+  allowMobileAutoplay?: boolean;
   title?: string;
   /** When true, fills a sized parent (e.g. portfolio clip tiles) instead of enforcing 16:9. */
   fillContainer?: boolean;
   posterVariant?: CloudinaryVariant;
 };
 
+const LG_MIN = "(min-width: 1024px)";
+const REDUCE_MOTION = "(prefers-reduced-motion: reduce)";
+
+function useMatchMedia(query: string, initial = false): boolean {
+  const [matches, setMatches] = useState(initial);
+
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const update = () => setMatches(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, [query]);
+
+  return matches;
+}
+
 /**
  * Uses Mux's official lazy player (`loading="viewport"`) so HLS only loads when
  * the clip nears the viewport. Cloudinary posters serve as placeholders — no
  * image.mux.com requests. `capRenditionToPlayerSize` keeps delivery minutes
  * down on smaller viewports (free-tier delivery budget).
+ *
+ * `fillContainer` uses `object-fit: cover` so tiles match CloudinaryImage;
+ * editorial 16:9 shells keep `contain`.
  */
 export function MuxVideoPlayer({
   playbackId,
   status = "ready",
   poster,
   autoplayMuted = false,
+  allowMobileAutoplay = false,
   title,
   fillContainer = false,
   posterVariant = "hero",
 }: Props) {
+  // Assume reduced motion until matchMedia runs so autoplay never flashes on.
+  const reducedMotion = useMatchMedia(REDUCE_MOTION, true);
+  const isDesktop = useMatchMedia(LG_MIN);
+  const shouldAutoplay =
+    autoplayMuted && !reducedMotion && (isDesktop || allowMobileAutoplay);
+
   const placeholder = poster
     ? cloudinaryImageUrl(poster.publicId, posterVariant)
     : undefined;
@@ -73,16 +106,22 @@ export function MuxVideoPlayer({
         playbackId={playbackId}
         streamType="on-demand"
         placeholder={placeholder}
-        autoPlay={autoplayMuted ? "muted" : false}
+        autoPlay={shouldAutoplay ? "muted" : false}
         muted={autoplayMuted}
-        loop={autoplayMuted}
+        loop={shouldAutoplay}
         playsInline
         preload="none"
-        defaultHiddenCaptions={false}
+        nohotkeys={shouldAutoplay}
+        defaultHiddenCaptions={autoplayMuted}
         accentColor="#A9793B"
         capRenditionToPlayerSize
         metadata={title ? { video_title: title } : undefined}
-        style={{ height: "100%", width: "100%" }}
+        style={{
+          height: "100%",
+          width: "100%",
+          "--media-object-fit": fillContainer ? "cover" : "contain",
+          ...(shouldAutoplay ? { "--controls": "none" } : {}),
+        }}
       />
     </div>
   );
