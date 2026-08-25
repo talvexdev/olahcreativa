@@ -11,6 +11,7 @@ export default defineType({
   name: "portfolioBlock",
   title: "Portafolio",
   type: "object",
+  options: { modal: { type: "dialog", width: 5 } },
   fields: [
     defineField({
       name: "eyebrow",
@@ -48,6 +49,7 @@ export default defineType({
         defineArrayMember({
           type: "object",
           name: "portfolioProject",
+          options: { modal: { type: "dialog", width: 5 } },
           fields: [
             defineField({
               name: "label",
@@ -117,7 +119,7 @@ export default defineType({
                       title: "Video corto (Mux)",
                       type: "muxVideo",
                       description:
-                        "Loops sin audio — activa “Autoplay muted” en el video para preview en la cuadrícula. No subas GIFs aquí; usa la imagen Cloudinary.",
+                        "Clips en bucle y sin audio: el sitio los reproduce en silencio al entrar en vista (se pausan si el visitante pide reducir movimiento). No subas GIFs aquí; usa la imagen Cloudinary.",
                     }),
                     defineField({
                       name: "image",

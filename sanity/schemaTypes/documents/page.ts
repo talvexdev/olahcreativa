@@ -26,6 +26,8 @@ export default defineType({
       title: "Contenido de la página",
       type: "array",
       group: "content",
+      description:
+        "En Portafolio (/portfolio) abre el módulo Portafolio (diálogo) para editar proyectos. No uses el botón Crear global — estas páginas ya existen.",
       of: [
         { type: "heroBlock" },
         { type: "aboutBlock" },
@@ -37,7 +39,10 @@ export default defineType({
         { type: "processBlock" },
         { type: "servicesBlock" },
         { type: "contactBlock" },
-        { type: "portfolioBlock" },
+        {
+          type: "portfolioBlock",
+          options: { modal: { type: "dialog", width: 5 } },
+        },
       ],
     }),
     defineField({ name: "seoTitle", title: "Título SEO", type: "string", group: "seo" }),

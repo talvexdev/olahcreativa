@@ -21,23 +21,21 @@ export const structure: StructureResolver = (S) =>
             .items([
               S.listItem()
                 .title("Inicio (/)")
-                .id("page-homepage")
+                .id("singleton-homepage")
                 .child(
                   S.document()
                     .schemaType("page")
                     .documentId("homepage")
-                    .title("Inicio")
-                    .initialValueTemplate("page-homepage"),
+                    .title("Inicio"),
                 ),
               S.listItem()
                 .title("Portafolio (/portfolio)")
-                .id("page-portfolio")
+                .id("singleton-page-portfolio")
                 .child(
                   S.document()
                     .schemaType("page")
                     .documentId("pagePortfolio")
-                    .title("Portafolio")
-                    .initialValueTemplate("page-portfolio"),
+                    .title("Portafolio"),
                 ),
             ]),
         ),

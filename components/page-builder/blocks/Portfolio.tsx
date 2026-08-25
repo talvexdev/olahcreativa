@@ -35,7 +35,7 @@ function MediaFrame({
 
   return (
     <div className={`relative overflow-hidden bg-surface ${RATIO[ratio]} ${className}`}>
-      {isEmpty && (
+      {isEmpty ? (
         <>
           <div
             aria-hidden
@@ -47,6 +47,8 @@ function MediaFrame({
           />
           <div className="absolute inset-0 border border-dashed border-line" />
         </>
+      ) : (
+        <div className="absolute inset-0">{children}</div>
       )}
 
       {badge && (
@@ -60,8 +62,6 @@ function MediaFrame({
           {note}
         </p>
       )}
-
-      {children}
     </div>
   );
 }
@@ -85,7 +85,10 @@ function ClipMedia({ clip, title }: { clip: PortfolioClip; title?: string }) {
         playbackId={clip.video.playbackId}
         status={clip.video.status}
         poster={toCloudinaryPoster(clip.video.poster)}
-        autoplayMuted={clip.video.autoplayMuted ?? false}
+        autoplayMuted
+        allowMobileAutoplay
+        loop
+        hideControls
         title={title}
         fillContainer
         posterVariant="grid"
@@ -115,6 +118,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
             status={project.heroVideo.status}
             poster={toCloudinaryPoster(project.heroVideo.poster)}
             autoplayMuted={project.heroVideo.autoplayMuted ?? false}
+            hideControls={false}
             title={project.title}
           />
         ) : hasCloudinaryAsset(project.heroImage) ? (

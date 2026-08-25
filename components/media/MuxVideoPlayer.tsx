@@ -18,10 +18,18 @@ type Props = {
   poster?: CloudinaryPoster | null;
   autoplayMuted?: boolean;
   /**
-   * When `autoplayMuted` is on, also loop on viewports below `lg`.
-   * Only the first Portada clip should pass true so small screens get one autoplay max.
+   * When `autoplayMuted` is on, also autoplay below `lg`.
+   * Portada: first clip only. Portafolio clips: all (viewport-lazy, muted).
    */
   allowMobileAutoplay?: boolean;
+  /** Decorative muted clips should pass true so playback loops even after a manual play. */
+  loop?: boolean;
+  /**
+   * `true` — never show Mux chrome (Portafolio clips).
+   * `false` — always show chrome (Portafolio main video).
+   * omitted — hide chrome only while muted autoplay is running (Portada).
+   */
+  hideControls?: boolean;
   title?: string;
   /** When true, fills a sized parent (e.g. portfolio clip tiles) instead of enforcing 16:9. */
   fillContainer?: boolean;
@@ -60,6 +68,8 @@ export function MuxVideoPlayer({
   poster,
   autoplayMuted = false,
   allowMobileAutoplay = false,
+  loop,
+  hideControls,
   title,
   fillContainer = false,
   posterVariant = "hero",
@@ -69,13 +79,15 @@ export function MuxVideoPlayer({
   const isDesktop = useMatchMedia(LG_MIN);
   const shouldAutoplay =
     autoplayMuted && !reducedMotion && (isDesktop || allowMobileAutoplay);
+  const shouldLoop = loop ?? shouldAutoplay;
+  const chromeHidden = hideControls === false ? false : hideControls === true || shouldAutoplay;
 
   const placeholder = poster
     ? cloudinaryImageUrl(poster.publicId, posterVariant)
     : undefined;
 
   const shellClass = fillContainer
-    ? "relative h-full w-full overflow-hidden bg-card"
+    ? "relative h-full w-full min-h-0 overflow-hidden bg-card"
     : "relative aspect-video w-full overflow-hidden bg-card";
 
   if (status === "errored") {
@@ -86,7 +98,7 @@ export function MuxVideoPlayer({
     );
   }
 
-  if (status !== "ready") {
+  if (status === "preparing") {
     return (
       <div className={shellClass}>
         {poster ? (
@@ -100,7 +112,7 @@ export function MuxVideoPlayer({
   }
 
   return (
-    <div className={shellClass}>
+    <div className={shellClass} aria-hidden={chromeHidden || undefined}>
       <MuxPlayer
         loading="viewport"
         playbackId={playbackId}
@@ -108,11 +120,11 @@ export function MuxVideoPlayer({
         placeholder={placeholder}
         autoPlay={shouldAutoplay ? "muted" : false}
         muted={autoplayMuted}
-        loop={shouldAutoplay}
+        loop={shouldLoop}
         playsInline
         preload="none"
-        nohotkeys={shouldAutoplay}
-        defaultHiddenCaptions={autoplayMuted}
+        nohotkeys={chromeHidden}
+        defaultHiddenCaptions={autoplayMuted || chromeHidden}
         accentColor="#A9793B"
         capRenditionToPlayerSize
         metadata={title ? { video_title: title } : undefined}
@@ -120,7 +132,7 @@ export function MuxVideoPlayer({
           height: "100%",
           width: "100%",
           "--media-object-fit": fillContainer ? "cover" : "contain",
-          ...(shouldAutoplay ? { "--controls": "none" } : {}),
+          ...(chromeHidden ? { "--controls": "none" } : {}),
         }}
       />
     </div>

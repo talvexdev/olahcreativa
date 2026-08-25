@@ -102,7 +102,7 @@ Constants: `HOME_PAGE_ID` / `PORTFOLIO_PAGE_ID` in `lib/sanity/page-slugs.ts`. F
 
 - **No page slug field** — routes are App Router files + document ids.
 - **No** free-form page templates, blank “Page” create, or catch-all `/[slug]` for CMS pages.
-- Templates: `sanity/lib/templates.ts` (values from `page-seed.ts`). Structure: `sanity/lib/structure.ts` (Spanish nav labels).
+- Templates: `sanity/lib/templates.ts` (values from `page-seed.ts`). Structure: `sanity/lib/structure.ts` (Spanish nav labels). Singleton list item ids must **not** match template ids (`page-homepage` / `page-portfolio`) — that collision opens a create-template pane and blocks editing the existing Portafolio page. Use `singleton-homepage` / `singleton-page-portfolio` and **no** `initialValueTemplate` on documents that already exist.
 - Shared render: `CmsPage` → `PageBuilder`. Until a singleton is published, its route 404s.
 
 ### Seeded module order
@@ -247,6 +247,8 @@ Studio labels Spanish; code/files/`_type` English:
 ### Portafolio (`portfolioBlock`)
 
 - Full section rhythm `py-28` (repeatable module; Más trabajos owns its own compact padding).
+- **Main (16:9) video** keeps Mux controls and the CMS autoplay checkbox.
+- Grid **clips**: always muted, looping, no Mux chrome, viewport-lazy autoplay. Honor `prefers-reduced-motion`. Ignore the CMS “Autoplay muted” checkbox for these tiles.
 
 ### Servicios
 
@@ -368,7 +370,7 @@ SEO: `openGraphFromCloudinaryImage()` / `cloudinarySeoUrl()`.
 - `preload="none"`, `capRenditionToPlayerSize`, poster via Cloudinary.
 - `autoplayMuted` only for short decorative loops (hero showcase / portfolio tiles).
 - `fillContainer` tiles: Mux `--media-object-fit: cover` (match Cloudinary `object-cover`). Editorial 16:9 players: `contain`.
-- Small viewports: one muted autoplay max (`allowMobileAutoplay` on the first Portada clip only). Honor `prefers-reduced-motion` in `MuxVideoPlayer` (not only CSS).
+- Small viewports: one muted autoplay max on Portada (`allowMobileAutoplay` on the first clip only). Portafolio grid clips may all autoplay (muted, lazy). Honor `prefers-reduced-motion` in `MuxVideoPlayer` (not only CSS).
 - Do not embed raw `stream.mux.com` or use `image.mux.com` for posters.
 
 Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-builder`.
@@ -416,7 +418,7 @@ Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-bui
 - Horizontal scroll: `snap-x snap-mandatory`, `overflow-x-auto`, focus-visible ring.
 - Always aspect-ratio wrappers to prevent CLS; use `<CloudinaryImage variant="…" sizes="…" />`.
 - `priority={true}` only for LCP candidates.
-- Video: `aspect-video` on small screens; one muted autoplay max on small viewports when possible (`allowMobileAutoplay` on the first Portada clip).
+- Video: `aspect-video` on small screens; one muted autoplay max on Portada (`allowMobileAutoplay` on the first clip). Portafolio grid clips: muted looping autoplay in view.
 - Respect `prefers-reduced-motion` (global CSS **and** Mux autoplay gate in `MuxVideoPlayer`).
 
 ---
@@ -496,7 +498,8 @@ When you change a standard, edit **this file** and add a one-line note below.
 
 | Date | Change |
 |------|--------|
-| 2026-08-22 | Más trabajos section fill: `bg-surface` + `border-t` (Inicio band colors, not `bg-wash`) |
+| 2026-08-22 | Portafolio clips: always muted + loop + autoplay; reduced-motion disables autoplay |
+| 2026-08-22 | Studio: singleton pane ids ≠ page templates; Portafolio module opens in a full dialog |
 | 2026-08-22 | Más trabajos (`workCtaBlock`) moved from Inicio seed to Portafolio, after `portfolioBlock` |
 | 2026-08-22 | Header nav: Portada `/#portada` (Hero) instead of Inicio `/`; scroll-spy tracks `#portada` |
 | 2026-08-22 | Media fit: layout `sizes` on `CloudinaryImage`; Mux cover vs contain; one mobile autoplay |
