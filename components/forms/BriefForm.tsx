@@ -5,11 +5,12 @@ import { submitBrief, type BriefFormState } from "@/lib/actions/contact";
 
 const initialState: BriefFormState = { ok: false, message: "" };
 
+// 16px text below `sm:` — iOS Safari zooms the page when focusing inputs under 16px.
 const FIELD =
-  "w-full rounded-[10px] border border-line bg-transparent px-4 py-[15px] text-[15px] text-fg outline-none transition-colors placeholder:text-muted focus:border-accent";
+  "w-full min-w-0 rounded-[10px] border border-line bg-transparent px-4 py-3.5 text-base text-fg outline-none transition-colors placeholder:text-muted focus:border-accent sm:py-[15px] sm:text-[15px]";
 
 const CARD =
-  "relative flex flex-col gap-3.5 rounded-2xl border border-line bg-card p-7 sm:p-8";
+  "relative flex w-full min-w-0 flex-col gap-3 rounded-2xl border border-line bg-card p-5 sm:gap-3.5 sm:p-8 lg:p-10";
 
 export function BriefForm({
   formTitle,
@@ -33,7 +34,7 @@ export function BriefForm({
 
   if (state.ok) {
     return (
-      <div className={`${CARD} items-start justify-center gap-3 py-16`}>
+      <div className={`${CARD} items-start justify-center gap-3 py-12 sm:py-16`}>
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">
           Enviado
         </p>
@@ -70,13 +71,31 @@ export function BriefForm({
         </p>
       )}
 
-      <input name="name" required placeholder="Tu nombre" className={FIELD} autoComplete="name" />
-      <input name="company" placeholder="Empresa" className={FIELD} autoComplete="organization" />
+      {/* Name + company share a row from `sm:` up; stacked on phones. */}
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-3.5">
+        <input
+          name="name"
+          required
+          placeholder="Tu nombre"
+          aria-label="Tu nombre"
+          className={FIELD}
+          autoComplete="name"
+        />
+        <input
+          name="company"
+          placeholder="Empresa"
+          aria-label="Empresa"
+          className={FIELD}
+          autoComplete="organization"
+        />
+      </div>
       <input
         name="email"
         type="email"
         required
         placeholder="Correo"
+        aria-label="Correo"
+        inputMode="email"
         className={FIELD}
         autoComplete="email"
       />
@@ -94,7 +113,7 @@ export function BriefForm({
                   type="button"
                   onClick={() => toggle(option)}
                   aria-pressed={on}
-                  className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                  className={`min-h-11 rounded-full border px-4 py-2 text-sm transition-colors sm:min-h-0 ${
                     on
                       ? "border-accent text-accent"
                       : "border-line text-muted hover:border-fg/40 hover:text-fg"
@@ -113,7 +132,8 @@ export function BriefForm({
         rows={4}
         required
         placeholder="Cuéntanos del proyecto"
-        className={`${FIELD} min-h-28 resize-none`}
+        aria-label="Cuéntanos del proyecto"
+        className={`${FIELD} min-h-28 resize-none sm:min-h-32`}
       />
 
       {state.message && (

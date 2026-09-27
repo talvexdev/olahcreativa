@@ -13,7 +13,7 @@ export function ContactBlock({ block }: BlockProps<ContactBlockData>) {
 
   return (
     <section id={sectionId} className="border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-8xl items-start gap-12 px-6 py-28 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-16">
+      <div className="mx-auto grid max-w-8xl items-start gap-10 px-6 py-16 sm:gap-12 sm:py-20 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-16 lg:py-28">
         <div>
           {block.eyebrow && (
             <p className="frame-label mb-8 flex items-center gap-3">

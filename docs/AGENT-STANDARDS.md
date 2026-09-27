@@ -266,9 +266,26 @@ Studio labels Spanish; code/files/`_type` English:
 
 ### Portafolio (`portfolioBlock`)
 
-- Full section rhythm `py-28` (repeatable module; Más trabajos owns its own compact padding).
+- Section rhythm is **asymmetric**: `pt-12 sm:pt-16 lg:pt-20` + `pb-16 sm:pb-20 lg:pb-28` (repeatable module; Más trabajos owns its own compact padding). Portafolio is the first module on `/portfolio`, so a full `pt-28` strands the project video below the fold — reduce the top, but keep clear breathing room under the sticky header; the full rhythm stays on the bottom edge. Project card padding `px-4 py-10 sm:px-8`.
+- **Project media spans the full card width** — do not cap it to the viewport height. Scaling the 16:9 frame down so it fits above the fold leaves it floating inside the card with visible side gutters; the tall-video trade-off is accepted instead. The reduced section `pt-*` is what brings the video closer to the fold.
 - **Main (16:9) video** keeps native controls and the CMS autoplay checkbox. Delivery preset `film` (1280).
 - Grid **clips**: four tiles (CLIP 01, CLIP 02, CLIP 03, STILL), always muted, looping, no controls, viewport-lazy autoplay. Honor `prefers-reduced-motion`. Ignore the CMS “Reproducir en silencio como fondo” checkbox for these tiles. Delivery preset `clip` (800). Schema max is 4.
+- **Project caption** (label + title) flows **below** the media on phones and only becomes an absolute gradient overlay from `lg:` up — never overlay text on the image at small widths.
+- **Ficha técnica:** the standard roles are **named optional fields** on `creditRoles` (Artista, Dirección, Producción, Guion, Cinematografía, Prod. musical, Color, Gaffer, BTS, Montaje) — editors type only the name, never the label. Blank roles are skipped; if every source is blank the whole block is omitted.
+  - Role list + order live **once** in `lib/page-builder/credit-roles.ts` (`PORTFOLIO_CREDIT_ROLES`). The Studio schema **generates** its fields by mapping that list and the normalizer reads them back in the same order — add a role there, never in one side alone. Keep that module dependency-free: the Studio schema imports it directly and must not pull the Cloudinary barrel into the Studio bundle.
+  - `creditList` (`role` + `name`) is for **extra** roles only, appended after the named ones. Legacy free-text `credits` strings are a **last-resort fallback**, split on `·`. All three collapse to one `PortfolioCredit[]`, so the renderer never branches on source.
+  - Render: description (with an **El proyecto** eyebrow) and the credit grid sit side by side from `lg:` up. Credit columns **auto-fit** (`repeat(auto-fit,minmax(150px,1fr))`) so the track count follows the card width — 3 columns around 1419px, 4 around 1601px. Do **not** hardcode a column count; it can't match the design at both widths. Two columns below `sm:`.
+  - Each cell: its own `border-t` rule, `pt-2.5`, mono `text-[10px]` `tracking-[0.18em]` role label, `text-[15px] font-semibold` name. Use `<ul>`, not `<dl>` — legacy credits have no role, and a `<dd>` without a `<dt>` is invalid.
+- **En movimiento** (`clips`, max 4) has **two layouts in one list**, both at **16:9** — the clip ratio never changes across breakpoints.
+  - Mobile/tablet: a 2-up mosaic, `grid grid-cols-2`, tiles at the default `video` ratio.
+  - Desktop: the same `<ul>` becomes `lg:flex` + `lg:snap-x lg:snap-mandatory lg:overflow-x-auto`, cards `lg:w-86` (344px = `--spacing` × 86) — the Galería strip's treatment at clip proportions.
+  - The “desliza para ver más” hint is `hidden lg:inline` — it only applies once the list actually scrolls.
+  - Do **not** give clip tiles per-tile aspects (square, 5/4, …). Clips are video frames; varying the ratio crops them differently at each breakpoint.
+- **Galería** (stills) uses the **same two-layout pattern** as En movimiento, always at the `portrait` (3:4) ratio — like clips, the ratio never changes across breakpoints.
+  - Mobile/tablet: a 2-up mosaic, `grid grid-cols-2`.
+  - Desktop: `lg:flex` snap strip, cards `lg:w-64` (256px).
+  - Same `hidden lg:inline` slide hint. No `-mx-4 px-4` edge bleed — that only made sense while the strip scrolled on phones.
+- Layout `sizes` live in the module's `SIZES_*` consts — keep `SIZES_CLIPS` / `SIZES_PORTRAIT` in step with the track widths above. Ratios come from the `RATIO` map via `MediaFrame` — no inline one-off aspect classes.
 
 ### Servicios
 
@@ -423,6 +440,7 @@ Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-bui
 ### Touch, images, video, motion
 
 - Tap targets ~44×44px for primary controls (including footer social icons).
+- Form fields: `text-base` (16px) below `sm:` so iOS doesn't zoom on focus; short paired fields (e.g. nombre + empresa) share a row from `sm:` up, stacked on phones.
 - Horizontal scroll: `snap-x snap-mandatory`, `overflow-x-auto`, focus-visible ring.
 - Always aspect-ratio wrappers to prevent CLS; use `<CloudinaryImage variant="…" sizes="…" />`.
 - `priority={true}` only for LCP candidates.
@@ -506,6 +524,10 @@ When you change a standard, edit **this file** and add a one-line note below.
 
 | Date | Change |
 |------|--------|
+| 2026-09-27 | Contacto / `BriefForm`: 16px fields on mobile, nombre + empresa 2-up from `sm:`, 44px chips on touch, mobile-first section padding |
+| 2026-09-27 | Portafolio Ficha técnica: named `creditRoles` fields generated from `PORTFOLIO_CREDIT_ROLES`; `creditList` for extras, legacy `credits` as fallback; description + credits side by side |
+| 2026-09-27 | Portafolio: reduced top padding so the project video sits closer to the fold (media stays full card width) |
+| 2026-09-27 | Portafolio: En movimiento (16:9) and Galería (3:4) both = 2-up mosaic below `lg:`, snap carousel above, one ratio at every width; mobile-first spacing/type for the module |
 | 2026-09-27 | Local `content:sync`, `netlify:env`, `netlify:deploy`, and `ship` — JP & PECA media from Cloudinary, then Netlify |
 | 2026-09-27 | Video moves from Mux to Cloudinary (`cloudinaryVideo`, `CloudinaryVideo`, presets `clip` / `film`) |
 | 2026-08-22 | Portafolio clips: always muted + loop + autoplay; reduced-motion disables autoplay |

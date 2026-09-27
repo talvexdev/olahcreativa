@@ -1,5 +1,7 @@
 import { defineType, defineField, defineArrayMember } from "sanity";
 
+import { PORTFOLIO_CREDIT_ROLES } from "@/lib/page-builder/credit-roles";
+
 import { anchorIdField } from "../anchorId";
 
 /**
@@ -76,11 +78,52 @@ export default defineType({
               rows: 3,
             }),
             defineField({
-              name: "credits",
-              title: "Créditos",
+              name: "creditRoles",
+              title: "Ficha técnica",
+              type: "object",
+              description:
+                "Escribe solo el nombre en los roles que apliquen. Los que dejes vacíos no se muestran en la web.",
+              options: { collapsible: true, collapsed: false },
+              // Roles come from PORTFOLIO_CREDIT_ROLES so Studio and the renderer
+              // can never drift apart — add a role there, not here.
+              fields: PORTFOLIO_CREDIT_ROLES.map(({ field, label }) =>
+                defineField({ name: field, title: label, type: "string" }),
+              ),
+            }),
+            defineField({
+              name: "creditList",
+              title: "Otros créditos",
               type: "array",
               description:
-                "Una línea por renglón, tal como quieres que se lea. ej. Dirección FlyGuy · Producción Giorgi Studios",
+                "Opcional. Solo para roles que no estén en la Ficha técnica. Se muestran después de los anteriores.",
+              of: [
+                defineArrayMember({
+                  type: "object",
+                  name: "credit",
+                  fields: [
+                    defineField({
+                      name: "role",
+                      title: "Rol",
+                      type: "string",
+                      description: "ej. Estilismo, Maquillaje, Asistente de cámara",
+                    }),
+                    defineField({
+                      name: "name",
+                      title: "Nombre",
+                      type: "string",
+                      validation: (R) => R.required(),
+                    }),
+                  ],
+                  preview: { select: { title: "name", subtitle: "role" } },
+                }),
+              ],
+            }),
+            defineField({
+              name: "credits",
+              title: "Créditos en texto libre (heredado)",
+              type: "array",
+              description:
+                "Solo para proyectos antiguos. Se usa únicamente si la Ficha técnica y Otros créditos están vacíos.",
               of: [{ type: "string" }],
             }),
             defineField({
@@ -97,10 +140,10 @@ export default defineType({
             }),
             defineField({
               name: "clips",
-              title: "Clips cortos",
+              title: "En movimiento (clips cortos)",
               type: "array",
               description:
-                "La fila de recuadros pequeños. Máximo 4. Video corto en bucle, o una imagen o GIF.",
+                "Mosaico de hasta 4 piezas: cada recuadro tiene su propio ancho y alto. Video corto en bucle, o una imagen o GIF.",
               validation: (R) => R.max(4),
               of: [
                 defineArrayMember({
