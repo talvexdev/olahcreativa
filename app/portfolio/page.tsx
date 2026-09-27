@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CmsPage } from "@/components/page-builder/CmsPage";
 import { openGraphFromCloudinaryImage } from "@/lib/cloudinary";
+import { ensureWorkCtaAfterPortfolio } from "@/lib/page-builder";
 import { pageByIdQuery } from "@/lib/sanity/queries";
 import { sanityClient, isSanityConfigured } from "@/lib/sanity/client";
 import { PORTFOLIO_PAGE_ID, PORTFOLIO_PAGE_PATH } from "@/lib/sanity/page-slugs";
@@ -23,5 +24,7 @@ export default async function PortfolioPage() {
   const page = await sanityClient.fetch(pageByIdQuery, { id: PORTFOLIO_PAGE_ID }).catch(() => null);
   if (!page) notFound();
 
-  return <CmsPage page={page} path={PORTFOLIO_PAGE_PATH} />;
+  const pageBuilder = ensureWorkCtaAfterPortfolio(page.pageBuilder);
+
+  return <CmsPage page={{ ...page, pageBuilder }} path={PORTFOLIO_PAGE_PATH} />;
 }

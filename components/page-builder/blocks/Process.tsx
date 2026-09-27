@@ -100,9 +100,8 @@ export function ProcessBlock({ block }: BlockProps<ProcessBlockData>) {
   });
 
   return (
-    // pt-12 mirrors Servicios pb-12 so Más trabajos sits in a real gap, not overlap.
     // id on the section so hash nav includes top spacing, not just the first text.
-    <section id={sectionId} className="mx-auto max-w-8xl px-6 pt-12 pb-28">
+    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-28">
       {block.eyebrow && (
         <p className="frame-label mb-8 flex items-center gap-3">
           <span className="block h-px w-8 bg-current" />

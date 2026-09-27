@@ -18,6 +18,7 @@ export { normalizeProjectedMuxVideo, type ProjectedMuxVideo } from "./mux-video"
 
 export {
   getImageGridColumnClass,
+  getImageGridSizes,
   normalizeImageGridItems,
 } from "./image-grid";
 
@@ -27,4 +28,6 @@ export {
   type HeroShowcaseView,
 } from "./hero";
 
-export { resolveSectionId, slugifyAnchor } from "./anchors";
+export { HERO_SECTION_ALIAS_ID, HERO_SECTION_ID, resolveSectionId, slugifyAnchor } from "./anchors";
+
+export { ensureWorkCtaAfterPortfolio, omitWorkCtaBlocks } from "./work-cta";

@@ -24,9 +24,8 @@ export function ServicesBlock({ block }: BlockProps<ServicesBlockData>) {
   });
 
   return (
-    // pb-12 leaves a bridge gap for Más trabajos (no overlapping negative margins).
     // id on the section so hash nav includes top spacing, not just the first text.
-    <section id={sectionId} className="mx-auto max-w-8xl px-6 pt-28 pb-12">
+    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-28">
       {block.eyebrow && (
         <p className="frame-label mb-8 flex items-center gap-3">
           <span className="block h-px w-8 bg-current" />

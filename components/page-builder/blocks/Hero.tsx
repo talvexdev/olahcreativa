@@ -7,37 +7,57 @@ import { normalizeHeroShowcase, type HeroShowcaseClip } from "@/lib/page-builder
 import type { BlockProps, HeroBlockData } from "@/lib/sanity/block-types";
 
 /**
- * Fill the viewport under the sticky header.
- * `--site-header-height` is measured by HeaderShell (nav wrap, mobile/tablet).
- * `100dvh` tracks mobile browser chrome so a leftover strip doesn’t show at the bottom;
+ * Portada fills the first viewport and sits *under* the sticky header:
+ * pull up by `--site-header-height` so `#portada` starts at y = 0, then pad
+ * content so it isn’t hidden under the bar. `100dvh` tracks mobile chrome;
  * `100vh` is the fallback where `dvh` isn’t supported.
  */
-const HERO_MIN_H = [
-  "min-h-[calc(100vh-var(--site-header-height))]",
-  "min-h-[calc(100dvh-var(--site-header-height))]",
+const HERO_SHELL = [
+  "-mt-[var(--site-header-height)]",
+  "min-h-[100vh] min-h-[100dvh]",
+  "scroll-mt-0",
 ].join(" ");
+
+/** Floor so leftover-fill at `lg` cannot shrink tiles to a cropped strip. */
+const TILE_FLOOR = "min-h-[12.5rem] lg:min-h-[16rem]";
+const TILE_GROW = "aspect-video w-full lg:aspect-auto lg:h-full";
+
+const SIZES_FULL = "100vw";
+const SIZES_SPLIT_MD = "(max-width: 767px) 100vw, 50vw";
+const SIZES_PRIMARY_3 = "(max-width: 1023px) 100vw, 50vw";
+const SIZES_SIDE_3 = "(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 25vw";
 
 function ShowcaseMedia({
   clip,
   className = "",
+  sizes,
+  allowMobileAutoplay = false,
 }: {
   clip: HeroShowcaseClip;
   className?: string;
+  sizes: string;
+  allowMobileAutoplay?: boolean;
 }) {
   return (
-    <div className={`relative min-h-0 overflow-hidden rounded-2xl bg-card ${className}`}>
+    <div className={`relative ${TILE_FLOOR} overflow-hidden rounded-2xl bg-card ${className}`}>
       {clip.video?.playbackId ? (
         <MuxVideoPlayer
           playbackId={clip.video.playbackId}
           status={clip.video.status}
           poster={toCloudinaryPoster(clip.video.poster)}
           autoplayMuted={clip.video.autoplayMuted ?? true}
+          allowMobileAutoplay={allowMobileAutoplay}
           fillContainer
           posterVariant="grid"
           title={clip.label}
         />
       ) : hasCloudinaryAsset(clip.image) ? (
-        <CloudinaryImage image={clip.image!} variant="grid" className="h-full w-full object-cover" />
+        <CloudinaryImage
+          image={clip.image!}
+          variant="grid"
+          sizes={sizes}
+          className="h-full w-full object-cover"
+        />
       ) : (
         <div className="absolute inset-0 border border-dashed border-line" />
       )}
@@ -65,6 +85,10 @@ function HeroShowcase({
         ? "md:grid-cols-2"
         : "grid-cols-1";
 
+  const primarySizes =
+    columnCount >= 3 ? SIZES_PRIMARY_3 : columnCount === 2 ? SIZES_SPLIT_MD : SIZES_FULL;
+  const sideSizes = columnCount >= 3 ? SIZES_SIDE_3 : SIZES_SPLIT_MD;
+
   return (
     <div
       className={[
@@ -79,24 +103,19 @@ function HeroShowcase({
       {primary ? (
         <ShowcaseMedia
           clip={primary}
+          sizes={primarySizes}
+          allowMobileAutoplay
           className={[
-            "aspect-video w-full",
+            TILE_GROW,
             columnCount >= 3 ? "md:col-span-2 lg:col-span-1" : "",
-            "lg:aspect-auto lg:h-full lg:min-h-0",
           ].join(" ")}
         />
       ) : null}
       {secondary ? (
-        <ShowcaseMedia
-          clip={secondary}
-          className="aspect-video w-full lg:aspect-auto lg:h-full lg:min-h-0"
-        />
+        <ShowcaseMedia clip={secondary} sizes={sideSizes} className={TILE_GROW} />
       ) : null}
       {tertiary ? (
-        <ShowcaseMedia
-          clip={tertiary}
-          className="aspect-video w-full lg:aspect-auto lg:h-full lg:min-h-0"
-        />
+        <ShowcaseMedia clip={tertiary} sizes={sideSizes} className={TILE_GROW} />
       ) : null}
     </div>
   );
@@ -109,15 +128,23 @@ export function HeroBlock({ block }: BlockProps<HeroBlockData>) {
 
   return (
     <section
+      id="portada"
       className={[
         "relative mx-auto flex w-full max-w-8xl flex-col px-6",
-        HERO_MIN_H,
-        // Grow past the fold if mobile + media would overflow (min-height, not fixed height)
+        HERO_SHELL,
+        // Grow past the fold if mobile + media would overflow (min-height, not fixed height).
+        // Top padding includes the sticky header so copy sits below it.
         showcase
-          ? "justify-center gap-8 py-10 sm:gap-10 sm:py-12 lg:justify-between lg:gap-12 lg:py-16"
-          : "justify-center gap-8 py-12 sm:gap-10 sm:py-16 lg:py-20",
+          ? "justify-center gap-8 pb-10 pt-[calc(var(--site-header-height)+2.5rem)] sm:gap-10 sm:pb-12 sm:pt-[calc(var(--site-header-height)+3rem)] lg:justify-between lg:gap-12 lg:pb-16 lg:pt-[calc(var(--site-header-height)+4rem)]"
+          : "justify-center gap-8 pb-12 pt-[calc(var(--site-header-height)+3rem)] sm:gap-10 sm:pb-16 sm:pt-[calc(var(--site-header-height)+4rem)] lg:pb-20 lg:pt-[calc(var(--site-header-height)+5rem)]",
       ].join(" ")}
     >
+      {/* Leftover CMS hash `/#inicio` lands on the same Portada module. */}
+      <div
+        id="inicio"
+        aria-hidden="true"
+        className="pointer-events-none absolute top-0 h-0 w-0 overflow-hidden"
+      />
       <div
         aria-hidden
         className="pointer-events-none absolute -right-36 -top-24 -z-10 h-155 w-155 rounded-full bg-wash blur-2xl sm:-top-32"

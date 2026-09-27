@@ -41,57 +41,35 @@ const pageProjection = groq`{
   pageBuilder[]{
     ...,
     _type == "heroBlock" => {
-      eyebrow,
-      heading,
-      headingAccent,
-      description,
-      ctaPrimary,
-      ctaSecondary,
+      ...,
       showcaseClips[]{
         label,
         video ${muxVideoProjection},
         image ${cloudinaryImageProjection}
       }
     },
-    _type == "aboutBlock" => {
-      eyebrow,
-      heading,
-      headingAccent,
-      paragraphs,
-      brandMark,
-      brandMarkAccent,
-      brandMarkSubtitle
-    },
-    _type == "workCtaBlock" => {
-      heading,
-      description,
-      cta
-    },
+    _type == "aboutBlock" => { ... },
+    _type == "workCtaBlock" => { ... },
+    _type == "servicesBlock" => { ... },
+    _type == "processBlock" => { ... },
+    _type == "contactBlock" => { ... },
     _type == "imageGridBlock" => {
-      heading, columns,
+      ...,
       items[] ${cloudinaryImageProjection}
     },
     _type == "portfolioBlock" => {
-      eyebrow,
-      heading,
-      headingAccent,
-      description,
+      ...,
       projects[]{
-        label,
-        category,
-        title,
-        description,
-        credits,
+        ...,
         heroVideo ${muxVideoProjection},
         heroImage ${cloudinaryImageProjection},
         clips[]{
-          label,
-          caption,
+          ...,
           video ${muxVideoProjection},
           image ${cloudinaryImageProjection}
         },
         gallery[]{
-          label,
+          ...,
           image ${cloudinaryImageProjection}
         }
       }

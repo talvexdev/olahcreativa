@@ -16,8 +16,12 @@ export const cloudinaryImageProjection = `{
 }`;
 
 export const muxVideoProjection = `{
-  "playbackId": asset.asset->playbackId,
-  "status": asset.asset->status,
+  "playbackId": coalesce(
+    asset.asset->playbackId,
+    asset.asset->data.playback_ids[0].id,
+    asset.playbackId
+  ),
+  "status": coalesce(asset.asset->status, asset.asset->data.status),
   poster ${cloudinaryImageProjection},
   caption,
   autoplayMuted

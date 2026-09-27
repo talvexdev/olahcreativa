@@ -68,6 +68,17 @@ const TARGETS: SeedTarget[] = [
   },
 ];
 
+const REQUIRED_PAGE_TYPES: Record<string, string[]> = {
+  [HOME_PAGE_ID]: [
+    "heroBlock",
+    "aboutBlock",
+    "servicesBlock",
+    "processBlock",
+    "contactBlock",
+  ],
+  [PORTFOLIO_PAGE_ID]: ["portfolioBlock", "workCtaBlock", "contactBlock"],
+};
+
 function parseFlags(argv: string[]): Flags {
   const flags: Flags = { force: false, dryRun: false, help: false };
   for (const arg of argv) {
@@ -92,13 +103,14 @@ Usage:
 Guards:
   • Requires Sanity project id, dataset, and SANITY_API_WRITE_TOKEN
   • Default: skip a doc if published or draft already exists
+  • Exception: fill Inicio/Portafolio when required modules are missing
   • --force: replace published doc and delete matching draft
   • --dry-run: print actions only (no writes)
 
 Notes:
   • Header/footer come from siteSettings (every page)
-  • Portafolio page seeds one Portafolio module + Contacto; add more Portafolio
-    modules under the first in the page builder as needed
+  • Portafolio page seeds Portafolio → Más trabajos → Contacto; add more
+    Portafolio modules under the first in the page builder as needed
   • Media (Mux/Cloudinary) is left for the CMS editor`);
 }
 
@@ -122,6 +134,21 @@ async function existingIds(client: SanityClient, id: string): Promise<string[]> 
   return rows.map((row) => row._id);
 }
 
+async function missingRequiredTypes(
+  client: SanityClient,
+  id: string,
+): Promise<string[] | null> {
+  const required = REQUIRED_PAGE_TYPES[id];
+  if (!required) return null;
+
+  const row = await client.fetch<{ types?: string[] } | null>(
+    `*[_id == $id][0]{ "types": pageBuilder[]._type }`,
+    { id },
+  );
+  const types = row?.types ?? [];
+  return required.filter((type) => !types.includes(type));
+}
+
 async function seedTarget(
   client: SanityClient,
   target: SeedTarget,
@@ -131,7 +158,18 @@ async function seedTarget(
   const hasPublished = found.includes(target.id);
   const hasDraft = found.includes(draftId(target.id));
 
-  if ((hasPublished || hasDraft) && !flags.force) {
+  let fillIncomplete = false;
+  if ((hasPublished || hasDraft) && !flags.force && target.kind === "page") {
+    const missing = await missingRequiredTypes(client, target.id);
+    if (missing && missing.length > 0) {
+      fillIncomplete = true;
+      console.log(
+        `…  ${target.label} (${target.id}) — exists but missing ${missing.join(", ")}. Filling from seed.`,
+      );
+    }
+  }
+
+  if ((hasPublished || hasDraft) && !flags.force && !fillIncomplete) {
     const where = [
       hasPublished ? "published" : null,
       hasDraft ? "draft" : null,
@@ -141,6 +179,30 @@ async function seedTarget(
     console.log(
       `⏭  ${target.label} (${target.id}) — already exists (${where}). Skipping. Use --force to overwrite.`,
     );
+
+    if (hasDraft && target.kind === "page") {
+      const draftRow = await client.fetch<{ n?: number } | null>(
+        `*[_id == $id][0]{ "n": count(pageBuilder) }`,
+        { id: draftId(target.id) },
+      );
+      const draftEmpty = (draftRow?.n ?? 0) === 0;
+      if (draftEmpty && !flags.dryRun) {
+        try {
+          await client.delete(draftId(target.id));
+          console.log(
+            `✓  Discarded empty ${draftId(target.id)} so Studio shows the published ${target.label}.`,
+          );
+        } catch (err) {
+          console.warn(
+            `⚠  Could not delete ${draftId(target.id)}:`,
+            err instanceof Error ? err.message : err,
+          );
+        }
+      } else if (draftEmpty && flags.dryRun) {
+        console.log(`·  would discard empty ${draftId(target.id)}`);
+      }
+    }
+
     return "skipped";
   }
 
@@ -171,7 +233,7 @@ async function seedTarget(
     });
   }
 
-  if (hasDraft) {
+  if (hasDraft && flags.force) {
     try {
       await client.delete(draftId(target.id));
     } catch (err) {
@@ -184,6 +246,11 @@ async function seedTarget(
 
   const action = hasPublished || hasDraft ? "replaced" : "created";
   console.log(`✓  ${target.label} (${target.id}) — ${action}${location}`);
+  if (fillIncomplete && hasDraft) {
+    console.log(
+      `⚠  Left ${draftId(target.id)} in place. Discard or publish that draft in Studio so it doesn’t hide the filled page.`,
+    );
+  }
   return action === "replaced" ? "replaced" : "created";
 }
 

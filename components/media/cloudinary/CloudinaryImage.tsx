@@ -15,6 +15,12 @@ type Props = {
   variant: CloudinaryVariant;
   priority?: boolean;
   className?: string;
+  /**
+   * Layout `sizes` hint for the browser’s srcset picker. Pass the slot’s CSS
+   * width — variant defaults are only a fallback. Transform max width still
+   * comes from `variant` / `variants.ts`.
+   */
+  sizes?: string;
 };
 
 /**
@@ -29,12 +35,13 @@ export function CloudinaryImage({
   variant,
   priority = false,
   className = "h-full w-full object-cover",
+  sizes: sizesOverride,
 }: Props) {
   if (!hasCloudinaryAsset(image)) return null;
 
   const maxWidth = cloudinaryMaxDeliveryWidth(image, variant);
   const { width, height } = cloudinaryImageDimensions(image, variant);
-  const { sizes } = getCloudinaryVariant(variant);
+  const sizes = sizesOverride ?? getCloudinaryVariant(variant).sizes;
   const src = buildCloudinaryDeliveryUrl(image.publicId, maxWidth, image);
   const srcSet = buildCloudinarySrcSet(image.publicId, maxWidth, image);
 

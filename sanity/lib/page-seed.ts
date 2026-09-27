@@ -7,6 +7,8 @@
 
 export type PageSeedValue = {
   title: string;
+  seoTitle?: string;
+  seoDescription?: string;
   pageBuilder: Record<string, unknown>[];
 };
 
@@ -26,7 +28,7 @@ export const siteSettingsSeed: SiteSettingsSeedValue = {
   brandName: "Olah Creativa",
   tagline: "Productora audiovisual · foto & video",
   navLinks: [
-    { label: "Inicio", href: "/" },
+    { label: "Portada", href: "/#portada" },
     { label: "Quiénes somos", href: "/#nosotros" },
     { label: "Servicios", href: "/#servicios" },
     { label: "Proceso", href: "/#proceso" },
@@ -46,9 +48,12 @@ export const siteSettingsSeed: SiteSettingsSeedValue = {
     "Productora audiovisual que ayuda a empresas a promocionar sus servicios con contenido creativo y dinámico.",
 };
 
-/** Inicio (/) — Portada → Quiénes somos → Servicios → Más trabajos → Proceso → Contacto. */
+/** Inicio (/) — Portada → Quiénes somos → Servicios → Proceso → Contacto. */
 export const homepagePageSeed: PageSeedValue = {
   title: "Inicio",
+  seoTitle: "Olah Creativa",
+  seoDescription:
+    "Productora audiovisual que ayuda a empresas a promocionar sus servicios con contenido creativo y dinámico.",
   pageBuilder: [
     {
       _key: "homeHero",
@@ -62,14 +67,15 @@ export const homepagePageSeed: PageSeedValue = {
         label: "Cuéntanos tu proyecto",
         href: "#contacto",
       },
-          ctaSecondary: {
-            label: "Ver servicios",
-            href: "#servicios",
-          },
-        },
+      ctaSecondary: {
+        label: "Ver servicios",
+        href: "#servicios",
+      },
+    },
     {
       _key: "homeAbout",
       _type: "aboutBlock",
+      anchorId: "nosotros",
       eyebrow: "QUIÉNES SOMOS",
       heading: "Una productora hecha para marcas que quieren verse",
       headingAccent: "distintas.",
@@ -84,6 +90,7 @@ export const homepagePageSeed: PageSeedValue = {
     {
       _key: "homeServices",
       _type: "servicesBlock",
+      anchorId: "servicios",
       eyebrow: "LO QUE GRABAMOS",
       heading: "Servicios,",
       headingAccent: "plano por plano.",
@@ -118,19 +125,9 @@ export const homepagePageSeed: PageSeedValue = {
       ],
     },
     {
-      _key: "homeWorkCta",
-      _type: "workCtaBlock",
-      heading: "¿Quieres ver más trabajos como este?",
-      description:
-        "Vamos a seguir sumando proyectos a este portafolio. Mientras tanto, síguenos en Instagram o escríbenos y con gusto compartimos más ejemplos directamente contigo.",
-      cta: {
-        label: "@olahcreativa",
-        href: "https://instagram.com/olahcreativa",
-      },
-    },
-    {
       _key: "homeProcess",
       _type: "processBlock",
+      anchorId: "proceso",
       eyebrow: "CÓMO TRABAJAMOS",
       heading: "De la idea a la entrega,",
       headingAccent: "en tres cortes.",
@@ -161,6 +158,7 @@ export const homepagePageSeed: PageSeedValue = {
     {
       _key: "homeContact",
       _type: "contactBlock",
+      anchorId: "contacto",
       eyebrow: "CONTACTO",
       heading: "¿Tienes un proyecto en mente?",
       description:
@@ -187,7 +185,7 @@ export const homepagePageSeed: PageSeedValue = {
 };
 
 /**
- * Portafolio (/portfolio) — one Portafolio module + Contacto.
+ * Portafolio (/portfolio) — Portafolio → Más trabajos → Contacto.
  * Editors can insert additional Portafolio modules below the first in the page builder.
  */
 export const portfolioPageSeed: PageSeedValue = {
@@ -204,8 +202,20 @@ export const portfolioPageSeed: PageSeedValue = {
       projects: [],
     },
     {
+      _key: "portfolioWorkCta",
+      _type: "workCtaBlock",
+      heading: "¿Quieres ver más trabajos como este?",
+      description:
+        "Vamos a seguir sumando proyectos a este portafolio. Mientras tanto, síguenos en Instagram o escríbenos y con gusto compartimos más ejemplos directamente contigo.",
+      cta: {
+        label: "@olahcreativa",
+        href: "https://instagram.com/olahcreativa",
+      },
+    },
+    {
       _key: "portfolioContact",
       _type: "contactBlock",
+      anchorId: "contacto",
       eyebrow: "CONTACTO",
       heading: "¿Tienes un proyecto en mente?",
       description:
