@@ -4,9 +4,8 @@ import { useState, useCallback } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
-import { CloudinaryImage } from "@/components/media/cloudinary";
+import { CloudinaryImage, CloudinaryVideo } from "@/components/media/cloudinary";
 import { cloudinaryImageUrl } from "@/lib/cloudinary";
-import { MuxVideoPlayer } from "@/components/media/MuxVideoPlayer";
 import type { GalleryItem } from "@/lib/page-builder";
 
 type Props = {
@@ -37,12 +36,12 @@ export function ProjectGallery({ items }: Props) {
         {items.map((item, i) => (
           <div key={i} className="relative bg-card">
             {item.type === "video" ? (
-              <MuxVideoPlayer
-                playbackId={item.playbackId}
-                status={item.status}
-                poster={item.poster}
-                autoplayMuted={item.autoplayMuted}
-                title={item.caption}
+              <CloudinaryVideo
+                publicId={item.video.publicId}
+                alt={item.video.alt}
+                sourceWidth={item.video.width}
+                autoplayMuted={item.video.autoplayMuted}
+                variant="film"
               />
             ) : (
               <button

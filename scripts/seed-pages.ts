@@ -111,7 +111,7 @@ Notes:
   • Header/footer come from siteSettings (every page)
   • Portafolio page seeds Portafolio → Más trabajos → Contacto; add more
     Portafolio modules under the first in the page builder as needed
-  • Media (Mux/Cloudinary) is left for the CMS editor`);
+  • Media (Cloudinary images and video) is left for the CMS editor`);
 }
 
 function requireEnv(name: string): string {
@@ -306,7 +306,7 @@ async function main() {
     console.log(`
 Still add in the CMS editor when ready:
   • Logo / SEO image on Ajustes del sitio
-  • Inicio → Portada showcase clips (Mux + Cloudinary poster)
+  • Inicio → Portada showcase clips (Cloudinary video or image)
   • Portafolio → projects inside the first Portafolio module (or add more Portafolio modules below it)
   • Contacto — custom interest chips / form title if needed`);
   }

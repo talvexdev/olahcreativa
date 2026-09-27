@@ -1,12 +1,10 @@
-import { normalizeCloudinaryImage } from "@/lib/cloudinary";
-import type { SanityCloudinaryImage } from "@/lib/cloudinary";
-
-import { normalizeProjectedMuxVideo, type ProjectedMuxVideo } from "./mux-video";
+import { normalizeCloudinaryImage, normalizeCloudinaryVideo } from "@/lib/cloudinary";
+import type { SanityCloudinaryImage, SanityCloudinaryVideo } from "@/lib/cloudinary";
 
 export type PortfolioClip = {
   label?: string;
   caption?: string;
-  video?: ProjectedMuxVideo;
+  video?: SanityCloudinaryVideo;
   image?: SanityCloudinaryImage;
 };
 
@@ -21,7 +19,7 @@ export type PortfolioProject = {
   title?: string;
   description?: string;
   credits?: string[];
-  heroVideo?: ProjectedMuxVideo;
+  heroVideo?: SanityCloudinaryVideo;
   heroImage?: SanityCloudinaryImage;
   clips?: PortfolioClip[];
   gallery?: PortfolioGalleryPhoto[];
@@ -46,10 +44,10 @@ export function normalizePortfolioProject(raw: unknown): PortfolioProject | null
         .map((clip) => {
           if (!clip || typeof clip !== "object") return null;
           const c = clip as Record<string, unknown>;
-          const video = normalizeProjectedMuxVideo(c.video);
+          const video = normalizeCloudinaryVideo(c.video) ?? undefined;
           const image = normalizeCloudinaryImage(c.image) ?? undefined;
 
-          if (!video?.playbackId && !image) return null;
+          if (!video?.publicId && !image) return null;
 
           return {
             label: typeof c.label === "string" ? c.label : undefined,
@@ -85,7 +83,7 @@ export function normalizePortfolioProject(raw: unknown): PortfolioProject | null
     credits: Array.isArray(record.credits)
       ? record.credits.filter((line): line is string => typeof line === "string")
       : undefined,
-    heroVideo: normalizeProjectedMuxVideo(record.heroVideo),
+    heroVideo: normalizeCloudinaryVideo(record.heroVideo) ?? undefined,
     heroImage: normalizeCloudinaryImage(record.heroImage) ?? undefined,
     clips,
     gallery,

@@ -1,6 +1,6 @@
 import { groq } from "next-sanity";
 
-import { cloudinaryImageProjection, muxVideoProjection } from "@/lib/sanity/projections";
+import { cloudinaryImageProjection, cloudinaryVideoProjection } from "@/lib/sanity/projections";
 
 /**
  * One combined query per page (not several small ones) — reduces request
@@ -27,7 +27,7 @@ export const projectBySlugQuery = groq`*[_type == "project" && slug.current == $
   coverImage ${cloudinaryImageProjection},
   media[]{
     _type == "cloudinaryImage" => ${cloudinaryImageProjection},
-    _type == "muxVideo" => ${muxVideoProjection}
+    _type == "cloudinaryVideo" => ${cloudinaryVideoProjection}
   },
   seoTitle,
   seoDescription,
@@ -44,7 +44,7 @@ const pageProjection = groq`{
       ...,
       showcaseClips[]{
         label,
-        video ${muxVideoProjection},
+        video ${cloudinaryVideoProjection},
         image ${cloudinaryImageProjection}
       }
     },
@@ -61,11 +61,11 @@ const pageProjection = groq`{
       ...,
       projects[]{
         ...,
-        heroVideo ${muxVideoProjection},
+        heroVideo ${cloudinaryVideoProjection},
         heroImage ${cloudinaryImageProjection},
         clips[]{
           ...,
-          video ${muxVideoProjection},
+          video ${cloudinaryVideoProjection},
           image ${cloudinaryImageProjection}
         },
         gallery[]{

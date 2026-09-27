@@ -12,11 +12,11 @@ Edit that file when conventions change. Do not duplicate standards in `.cursor/r
 
 ## Quick orientation
 
-- **Stack:** Next.js 16 · Sanity Studio · Cloudinary · Mux · Tailwind v4 · Vercel
+- **Stack:** Next.js 16 · Sanity Studio · Cloudinary · Tailwind v4 · Netlify
 - **Human setup:** `README.md` (accounts, env, webhooks, `npm run seed:pages`)
 - **Language:** English code/files/`_type`; Spanish Studio labels + user-facing copy
-- **Layout:** `components/{site,media,forms,page-builder}` · `lib/{sanity,cloudinary,mux,page-builder,site,media-cleanup}`
-- **Images / video:** `CloudinaryImage` · `MuxVideoPlayer`
+- **Layout:** `components/{site,media,forms,page-builder}` · `lib/{sanity,cloudinary,page-builder,site,media-cleanup}`
+- **Images / video:** `CloudinaryImage` · `CloudinaryVideo`
 - **Fixed pages:** Inicio `/` (`homepage`) · Portafolio `/portfolio` (`pagePortfolio`)
 - **Seed:** `sanity/lib/page-seed.ts` + `npm run seed:pages` (site settings + both pages)
 - **Chrome:** Header/footer from `siteSettings`; curated `SiteNav`; section anchors via `resolveSectionId` / **Ancla (URL)**

@@ -1,6 +1,5 @@
-import { CloudinaryImage } from "@/components/media/cloudinary";
-import { MuxVideoPlayer } from "@/components/media/MuxVideoPlayer";
-import { hasCloudinaryAsset, toCloudinaryPoster } from "@/lib/cloudinary";
+import { CloudinaryImage, CloudinaryVideo } from "@/components/media/cloudinary";
+import { hasCloudinaryAsset } from "@/lib/cloudinary";
 import {
   normalizePortfolioBlock,
   resolveSectionId,
@@ -79,19 +78,18 @@ function PlayButton() {
 }
 
 function ClipMedia({ clip, title }: { clip: PortfolioClip; title?: string }) {
-  if (clip.video?.playbackId) {
+  if (clip.video?.publicId) {
     return (
-      <MuxVideoPlayer
-        playbackId={clip.video.playbackId}
-        status={clip.video.status}
-        poster={toCloudinaryPoster(clip.video.poster)}
+      <CloudinaryVideo
+        publicId={clip.video.publicId}
+        alt={clip.video.alt || title || "Clip"}
+        sourceWidth={clip.video.width}
         autoplayMuted
         allowMobileAutoplay
         loop
         hideControls
-        title={title}
         fillContainer
-        posterVariant="grid"
+        variant="clip"
       />
     );
   }
@@ -112,14 +110,14 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
   return (
     <article className="overflow-hidden rounded-2xl border border-line bg-card">
       <div className="group relative">
-        {project.heroVideo?.playbackId ? (
-          <MuxVideoPlayer
-            playbackId={project.heroVideo.playbackId}
-            status={project.heroVideo.status}
-            poster={toCloudinaryPoster(project.heroVideo.poster)}
+        {project.heroVideo?.publicId ? (
+          <CloudinaryVideo
+            publicId={project.heroVideo.publicId}
+            alt={project.heroVideo.alt || project.title || "Video"}
+            sourceWidth={project.heroVideo.width}
             autoplayMuted={project.heroVideo.autoplayMuted ?? false}
             hideControls={false}
-            title={project.title}
+            variant="film"
           />
         ) : hasCloudinaryAsset(project.heroImage) ? (
           <MediaFrame>

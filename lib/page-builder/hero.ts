@@ -1,11 +1,9 @@
-import { normalizeCloudinaryImage } from "@/lib/cloudinary";
-import type { SanityCloudinaryImage } from "@/lib/cloudinary";
-
-import { normalizeProjectedMuxVideo, type ProjectedMuxVideo } from "./mux-video";
+import { normalizeCloudinaryImage, normalizeCloudinaryVideo } from "@/lib/cloudinary";
+import type { SanityCloudinaryImage, SanityCloudinaryVideo } from "@/lib/cloudinary";
 
 export type HeroShowcaseClip = {
   label?: string;
-  video?: ProjectedMuxVideo;
+  video?: SanityCloudinaryVideo;
   image?: SanityCloudinaryImage;
 };
 
@@ -16,10 +14,10 @@ export type HeroShowcaseView = {
 function normalizeShowcaseClip(raw: unknown): HeroShowcaseClip | null {
   if (!raw || typeof raw !== "object") return null;
   const record = raw as Record<string, unknown>;
-  const video = normalizeProjectedMuxVideo(record.video);
+  const video = normalizeCloudinaryVideo(record.video) ?? undefined;
   const image = normalizeCloudinaryImage(record.image) ?? undefined;
 
-  if (!video?.playbackId && !image) return null;
+  if (!video?.publicId && !image) return null;
 
   return {
     label: typeof record.label === "string" ? record.label : undefined,

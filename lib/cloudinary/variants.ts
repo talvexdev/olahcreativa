@@ -1,4 +1,4 @@
-import type { CloudinaryVariant, CloudinaryVariantConfig } from "./types";
+import type { CloudinaryVariant, CloudinaryVariantConfig, CloudinaryVideoVariant } from "./types";
 
 /**
  * The only transformation sizes used on the public site. Each unique
@@ -38,6 +38,21 @@ export const CLOUDINARY_DELIVERY = {
   quality: "auto:good" as const,
   format: "auto" as const,
 };
+
+/**
+ * The only video delivery widths. One MP4 per preset (`f_mp4`, not `f_auto`)
+ * so each source clip produces a single derivative. `clip` matches image `grid`.
+ * `film` stays at 1280 so a transformed file stays under Cloudinary's free-plan
+ * 40 MB output cap more often than a 1920 encode.
+ */
+export const CLOUDINARY_VIDEO_VARIANTS: Record<CloudinaryVideoVariant, { width: number }> = {
+  clip: { width: 800 },
+  film: { width: 1280 },
+};
+
+export function getCloudinaryVideoVariant(variant: CloudinaryVideoVariant): { width: number } {
+  return CLOUDINARY_VIDEO_VARIANTS[variant];
+}
 
 export function getCloudinaryVariant(variant: CloudinaryVariant): CloudinaryVariantConfig {
   return CLOUDINARY_VARIANTS[variant];

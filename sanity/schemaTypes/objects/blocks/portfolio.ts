@@ -4,7 +4,7 @@ import { anchorIdField } from "../anchorId";
 
 /**
  * Portfolio section — rendered by components/page-builder/blocks/Portfolio.tsx.
- * Hero: optional Mux video or Cloudinary still. Clips: Mux short loops or Cloudinary stills/GIFs.
+ * Hero: optional Cloudinary video or still. Clips: short Cloudinary loops or stills/GIFs.
  * Default anchor: #portafolio (set Ancla when adding more than one Portafolio module).
  */
 export default defineType({
@@ -86,8 +86,8 @@ export default defineType({
             defineField({
               name: "heroVideo",
               title: "Video principal",
-              type: "muxVideo",
-              description: "16:9 hero clip. Takes priority over the hero still when both are set.",
+              type: "cloudinaryVideo",
+              description: "Clip 16:9. Si también hay imagen principal, se muestra el video.",
             }),
             defineField({
               name: "heroImage",
@@ -100,7 +100,7 @@ export default defineType({
               title: "Clips cortos",
               type: "array",
               description:
-                "La fila de recuadros pequeños. Máximo 4. Usa Mux para loops de video cortos o Cloudinary para stills y GIFs animados.",
+                "La fila de recuadros pequeños. Máximo 4. Video corto en bucle, o una imagen o GIF.",
               validation: (R) => R.max(4),
               of: [
                 defineArrayMember({
@@ -116,28 +116,28 @@ export default defineType({
                     defineField({ name: "caption", title: "Pie", type: "string" }),
                     defineField({
                       name: "video",
-                      title: "Video corto (Mux)",
-                      type: "muxVideo",
+                      title: "Video corto",
+                      type: "cloudinaryVideo",
                       description:
-                        "Clips en bucle y sin audio: el sitio los reproduce en silencio al entrar en vista (se pausan si el visitante pide reducir movimiento). No subas GIFs aquí; usa la imagen Cloudinary.",
+                        "Clips en bucle y sin audio: el sitio los reproduce en silencio al entrar en vista (se pausan si el visitante pide reducir movimiento). No subas GIFs aquí; usa la imagen.",
                     }),
                     defineField({
                       name: "image",
                       title: "Imagen / GIF",
                       type: "cloudinaryImage",
                       description:
-                        "Stills o GIFs animados desde Cloudinary. El video Mux tiene prioridad si ambos están definidos.",
+                        "Stills o GIFs animados. El video tiene prioridad si ambos están definidos.",
                     }),
                   ],
                   preview: {
                     select: {
                       title: "label",
                       subtitle: "caption",
-                      videoPoster: "video.poster.asset",
+                      video: "video.asset",
                       image: "image.asset",
                     },
-                    prepare({ title, subtitle, videoPoster, image }) {
-                      return { title, subtitle, media: videoPoster ?? image };
+                    prepare({ title, subtitle, video, image }) {
+                      return { title, subtitle, media: video ?? image };
                     },
                   },
                 }),

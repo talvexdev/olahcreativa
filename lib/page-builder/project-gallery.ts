@@ -1,7 +1,5 @@
-import { normalizeCloudinaryImage, toCloudinaryPoster } from "@/lib/cloudinary";
-import type { CloudinaryPoster, SanityCloudinaryImage } from "@/lib/cloudinary";
-
-import { normalizeProjectedMuxVideo } from "./mux-video";
+import { normalizeCloudinaryImage, normalizeCloudinaryVideo } from "@/lib/cloudinary";
+import type { SanityCloudinaryImage, SanityCloudinaryVideo } from "@/lib/cloudinary";
 
 export type GalleryImageItem = {
   type: "image";
@@ -11,11 +9,8 @@ export type GalleryImageItem = {
 
 export type GalleryVideoItem = {
   type: "video";
-  playbackId: string;
-  status?: "preparing" | "ready" | "errored";
-  poster?: CloudinaryPoster;
+  video: SanityCloudinaryVideo;
   caption?: string;
-  autoplayMuted?: boolean;
 };
 
 export type GalleryItem = GalleryImageItem | GalleryVideoItem;
@@ -28,19 +23,12 @@ export function mapProjectMediaToGalleryItems(media: unknown[] | null | undefine
     if (!item || typeof item !== "object") return [];
 
     const record = item as Record<string, unknown>;
-    const mux = normalizeProjectedMuxVideo(record);
+    const isVideo = record._type === "cloudinaryVideo" || record.resourceType === "video";
 
-    if (mux) {
-      return [
-        {
-          type: "video",
-          playbackId: mux.playbackId,
-          status: mux.status,
-          poster: toCloudinaryPoster(mux.poster) ?? undefined,
-          caption: mux.caption,
-          autoplayMuted: mux.autoplayMuted,
-        },
-      ];
+    if (isVideo) {
+      const video = normalizeCloudinaryVideo(record);
+      if (!video) return [];
+      return [{ type: "video", video, caption: video.caption }];
     }
 
     const image = normalizeCloudinaryImage(record);

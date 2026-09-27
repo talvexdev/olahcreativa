@@ -54,7 +54,7 @@ export default defineType({
       title: "Media",
       type: "array",
       group: "content",
-      of: [{ type: "cloudinaryImage" }, { type: "muxVideo" }],
+      of: [{ type: "cloudinaryImage" }, { type: "cloudinaryVideo" }],
       description: "Fotos y clips, en el orden de visualización.",
       validation: (R) => R.min(1),
     }),

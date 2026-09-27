@@ -6,7 +6,6 @@ const nextConfig = {
     imageSizes: [200, 224, 400, 640],
     remotePatterns: [
       { protocol: 'https', hostname: 'res.cloudinary.com' },
-      { protocol: 'https', hostname: 'image.mux.com' },
     ],
   },
 };

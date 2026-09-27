@@ -1,8 +1,7 @@
 import Link from "next/link";
 
-import { CloudinaryImage } from "@/components/media/cloudinary";
-import { MuxVideoPlayer } from "@/components/media/MuxVideoPlayer";
-import { hasCloudinaryAsset, toCloudinaryPoster } from "@/lib/cloudinary";
+import { CloudinaryImage, CloudinaryVideo } from "@/components/media/cloudinary";
+import { hasCloudinaryAsset } from "@/lib/cloudinary";
 import { normalizeHeroShowcase, type HeroShowcaseClip } from "@/lib/page-builder/hero";
 import type { BlockProps, HeroBlockData } from "@/lib/sanity/block-types";
 
@@ -40,16 +39,15 @@ function ShowcaseMedia({
 }) {
   return (
     <div className={`relative ${TILE_FLOOR} overflow-hidden rounded-2xl bg-card ${className}`}>
-      {clip.video?.playbackId ? (
-        <MuxVideoPlayer
-          playbackId={clip.video.playbackId}
-          status={clip.video.status}
-          poster={toCloudinaryPoster(clip.video.poster)}
+      {clip.video?.publicId ? (
+        <CloudinaryVideo
+          publicId={clip.video.publicId}
+          alt={clip.video.alt}
+          sourceWidth={clip.video.width}
           autoplayMuted={clip.video.autoplayMuted ?? true}
           allowMobileAutoplay={allowMobileAutoplay}
           fillContainer
-          posterVariant="grid"
-          title={clip.label}
+          variant="clip"
         />
       ) : hasCloudinaryAsset(clip.image) ? (
         <CloudinaryImage

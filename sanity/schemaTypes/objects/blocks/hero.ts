@@ -36,7 +36,7 @@ export default defineType({
       title: "Clips del reel (opcional)",
       type: "array",
       description:
-        "Hasta 3 clips para la grilla bajo el hero (como en la portada de referencia). Usa Mux con poster Cloudinary.",
+        "Hasta 3 clips para la grilla bajo el título. Video o imagen desde Cloudinary.",
       validation: (R) => R.max(3),
       of: [
         defineArrayMember({
@@ -51,8 +51,8 @@ export default defineType({
             }),
             defineField({
               name: "video",
-              title: "Video (Mux)",
-              type: "muxVideo",
+              title: "Video",
+              type: "cloudinaryVideo",
             }),
             defineField({
               name: "image",

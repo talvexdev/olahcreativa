@@ -4,7 +4,7 @@ import type { DocumentActionComponent } from "sanity";
 
 /**
  * "Restore asset" — deletes the tombstone document, cancelling the pending
- * removal tracking. The underlying Cloudinary/Mux asset is untouched.
+ * removal tracking. The underlying Cloudinary asset is untouched.
  */
 export const RestoreTombstoneAction: DocumentActionComponent = (props) => {
   const { del } = useDocumentOperation(props.id, props.type);

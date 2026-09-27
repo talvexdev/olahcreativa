@@ -1,6 +1,6 @@
 /**
  * Shared page / site seed payloads — used by page templates and `npm run seed:pages`.
- * Spanish user-facing copy only. No Mux/Cloudinary assets (add media in the CMS editor).
+ * Spanish user-facing copy only. No Cloudinary assets (add media in the CMS editor).
  *
  * Header + footer are global (`siteSettings` + root layout), not page-builder modules.
  */

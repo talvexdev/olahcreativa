@@ -1,9 +1,9 @@
-import { getCldImageUrl } from "next-cloudinary";
+import { getCldImageUrl, getCldVideoUrl } from "next-cloudinary";
 
 import { cloudinaryDeliveryTransformOptions } from "./format";
-import { getCloudinaryVariant } from "./variants";
+import { getCloudinaryVariant, getCloudinaryVideoVariant } from "./variants";
 import type { CloudinaryDeliveryMeta } from "./format";
-import type { CloudinaryVariant, SanityCloudinaryImage } from "./types";
+import type { CloudinaryVariant, CloudinaryVideoVariant, SanityCloudinaryImage } from "./types";
 import { hasCloudinaryAsset } from "./guards";
 
 /** Max delivery width for a variant — never upscale beyond the source asset. */
@@ -38,7 +38,46 @@ export function buildCloudinaryDeliveryUrl(
   });
 }
 
-/** Builds a delivery URL when a plain string is required (lightbox, OG fallbacks, Mux placeholders). */
+function cloudinaryVideoDeliveryWidth(variant: CloudinaryVideoVariant, sourceWidth?: number): number {
+  const { width } = getCloudinaryVideoVariant(variant);
+  if (typeof sourceWidth === "number" && sourceWidth > 0) {
+    return Math.min(width, sourceWidth);
+  }
+  return width;
+}
+
+/** One cached MP4 per preset. Do not pass `f_auto` — that stores a derivative per browser. */
+export function cloudinaryVideoUrl(
+  publicId: string,
+  variant: CloudinaryVideoVariant,
+  sourceWidth?: number
+): string {
+  return getCldVideoUrl({
+    src: publicId,
+    width: cloudinaryVideoDeliveryWidth(variant, sourceWidth),
+    crop: "limit",
+    quality: "auto:good",
+    format: "mp4",
+  });
+}
+
+/** First-frame still. One JPEG per preset, generated from the same width as playback. */
+export function cloudinaryVideoPosterUrl(
+  publicId: string,
+  variant: CloudinaryVideoVariant,
+  sourceWidth?: number
+): string {
+  return getCldVideoUrl({
+    src: publicId,
+    width: cloudinaryVideoDeliveryWidth(variant, sourceWidth),
+    crop: "limit",
+    quality: "auto:good",
+    format: "jpg",
+    rawTransformations: ["so_0"],
+  });
+}
+
+/** Builds a delivery URL when a plain string is required (lightbox, OG fallbacks). */
 export function cloudinaryImageUrl(
   publicId: string,
   variant: CloudinaryVariant,

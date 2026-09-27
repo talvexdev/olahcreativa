@@ -11,10 +11,14 @@
     "start": "next start",
     "lint": "eslint .",
     "typegen": "sanity typegen generate",
-    "seed:pages": "tsx --env-file=.env.local scripts/seed-pages.ts"
+    "seed:pages": "tsx --env-file=.env.local scripts/seed-pages.ts",
+    "content:sync": "tsx --env-file=.env.local scripts/sync-cloudinary-portfolio.ts",
+    "netlify:env": "tsx --env-file=.env.local scripts/sync-netlify-env.ts",
+    "netlify:deploy": "netlify deploy --build",
+    "netlify:deploy:prod": "netlify deploy --build --prod",
+    "ship": "npm run content:sync && npm run netlify:env && npm run netlify:deploy:prod"
   },
   "dependencies": {
-    "@mux/mux-player-react": "^3.2.0",
     "@sanity/client": "^7.25.0",
     "@sanity/vision": "^6.0.0",
     "next": "16.2.12",
@@ -25,7 +29,6 @@
     "resend": "^6.18.1",
     "sanity": "6.8.0",
     "sanity-plugin-cloudinary": "^2.0.16",
-    "sanity-plugin-mux-input": "^5.0.7",
     "styled-components": "^6.1.13",
     "yet-another-react-lightbox": "^3.21.7"
   },

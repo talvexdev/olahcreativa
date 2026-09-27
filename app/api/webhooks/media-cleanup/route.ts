@@ -19,27 +19,10 @@ type WebhookBody = {
   _rev?: string;
 };
 
-async function resolveMuxAssetRefs(documentIds: string[]): Promise<string[]> {
-  if (documentIds.length === 0) return [];
-
-  const rows = await sanityWriteClient.fetch<{ assetId?: string }[]>(
-    `*[_id in $refs && _type == "mux.videoAsset"]{
-      "assetId": coalesce(assetId, data.id)
-    }`,
-    { refs: documentIds }
-  );
-
-  return rows
-    .map((row) => row.assetId)
-    .filter((assetId): assetId is string => typeof assetId === "string" && Boolean(assetId));
-}
-
-const extractOptions = { resolveMuxRefs: resolveMuxAssetRefs };
-
 /**
  * Sanity webhook target — creates mediaTombstone records when media is removed
  * from a project/page (delete or update). Tombstones give editors a 14-day grace
- * window to restore before manually deleting assets in Cloudinary/Mux.
+ * window to restore before manually deleting assets in Cloudinary.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -65,20 +48,15 @@ export async function POST(req: NextRequest) {
 
     if (!currentDoc) {
       // Document deleted — tombstone all media from the webhook payload
-      assetsToTombstone = await extractMediaAssets(
-        body as Record<string, unknown>,
-        sourceTitle,
-        extractOptions
-      );
+      assetsToTombstone = extractMediaAssets(body as Record<string, unknown>, sourceTitle);
     } else {
       // Document updated — diff against previous revision if available
       const previousRev = await getPreviousRevision(body._id, body._rev);
       if (previousRev) {
-        assetsToTombstone = await diffRemovedMedia(
+        assetsToTombstone = diffRemovedMedia(
           previousRev as Record<string, unknown>,
           currentDoc as Record<string, unknown>,
-          sourceTitle,
-          extractOptions
+          sourceTitle
         );
       } else {
         return NextResponse.json({ message: "No previous revision to diff" }, { status: 200 });
