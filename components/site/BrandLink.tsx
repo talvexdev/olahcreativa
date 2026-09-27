@@ -33,7 +33,7 @@ export function BrandLink({
     <Link
       href={`/#${HERO_SECTION_ID}`}
       onClick={onClick}
-      className="font-display text-xl tracking-tight text-fg"
+      className="shrink-0 whitespace-nowrap font-display text-xl tracking-tight text-fg"
       aria-label={brandName}
     >
       {children}

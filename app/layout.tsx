@@ -13,15 +13,15 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "sw
 const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-ibm-mono", display: "swap" });
 
 /**
- * Runs before first paint so the page never flashes the wrong theme.
- * Stored choice wins; otherwise fall back to the OS preference.
+ * Runs before first paint. Dark is the default. The toggle is the only switch:
+ * a stored "light" removes the class. The OS color scheme is ignored.
  */
 const themeScript = `
 (function(){
   try {
     var t = localStorage.getItem("theme");
-    if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    if (t === "dark") document.documentElement.classList.add("dark");
+    if (t === "light") document.documentElement.classList.remove("dark");
+    else document.documentElement.classList.add("dark");
   } catch (e) {}
 })();
 `;
@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${fraunces.variable} ${inter.variable} ${mono.variable}`}
+      className={`dark ${fraunces.variable} ${inter.variable} ${mono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

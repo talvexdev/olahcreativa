@@ -13,16 +13,16 @@ export function ContactBlock({ block }: BlockProps<ContactBlockData>) {
 
   return (
     <section id={sectionId} className="border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-8xl items-start gap-10 px-6 py-16 sm:gap-12 sm:py-20 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-16 lg:py-28">
+      <div className="mx-auto grid max-w-8xl items-start gap-10 px-6 py-8 sm:gap-12 sm:py-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-14">
         <div>
           {block.eyebrow && (
-            <p className="frame-label mb-8 flex items-center gap-3">
+            <p className="frame-label mb-6 flex items-center gap-3 sm:mb-8">
               <span className="block h-px w-8 bg-current" />
               {block.eyebrow}
             </p>
           )}
 
-          <h2 className="max-w-[16ch] text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]">
+          <h2 className="max-w-[16ch] text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
             {block.heading}{" "}
             {block.headingAccent && (
               <span className="text-accent">{block.headingAccent}</span>
@@ -36,7 +36,7 @@ export function ContactBlock({ block }: BlockProps<ContactBlockData>) {
           )}
 
           {links.length > 0 && (
-            <div className="mt-12 flex flex-col gap-4 sm:mt-14 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-10 sm:gap-y-4">
+            <div className="mt-12 flex flex-col gap-4 sm:mt-14 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-10 sm:gap-y-4 lg:mt-16">
               {links.map((link, i) =>
                 link.href ? (
                   <a

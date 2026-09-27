@@ -167,12 +167,12 @@ If `brandName` is missing, UI falls back to **"Olah Creativa"** — never a gene
 
 ### Header height & full-viewport sections
 
-- `HeaderShell` measures the sticky header and sets `--site-header-height` on `:root` (updates on resize/orientation).
-- CSS fallback: `--site-header-height: 4.5rem` in `globals.css`.
+- `HeaderShell` measures the sticky header and sets `--site-header-height` on `:root` (updates on resize/orientation). The mobile menu overlays the bar, so opening it does not change this height.
+- CSS fallback: `--site-header-height: 4.5rem` in `globals.css`. Header padding is `py-3 lg:py-5` so a 44px menu button and theme toggle stay near that fallback on small screens.
 - `html { scroll-padding-top: var(--site-header-height); }` for hash links under the sticky bar.
 - Put section `id`s on the **outer module** (`<section>`) so hash nav includes top spacing; `scroll-padding-top` clears the sticky header.
 - `SiteNav` manually `scrollIntoView`s same-page hash clicks (Next may not re-scroll).
-- Portada (and any full-viewport module) is `min-height: 100dvh` and sits **under** the sticky header: `-mt-[var(--site-header-height)]` + matching top padding so copy isn’t hidden. `#portada` starts at y = 0. This overlap is header chrome only — do not pull modules over each other.
+- Portada sits **under** the sticky header at every width: `-mt-[var(--site-header-height)]` + matching top padding so copy isn’t hidden. `#portada` starts at y = 0. This overlap is header chrome only — do not pull modules over each other. It fills the viewport (`100dvh`, `100vh` fallback) only from `lg` up. Below that, height follows the content.
 
 ### Navigation (curated, flat)
 
@@ -182,6 +182,7 @@ If `brandName` is missing, UI falls back to **"Olah Creativa"** — never a gene
 - **Do not** auto-build the header from every page-builder block.
 - **Do not** add nested submenus for repeated modules by default. If a second Portafolio block must be reachable, give it a distinct **Ancla (URL)** and optionally add one curated nav link — only when the destination is meaningfully different.
 - `SiteNav` (`components/site/SiteNav.tsx`): scroll-spy highlights same-page hash targets with `text-accent` + `aria-current`; page routes activate by pathname. Do **not** put `frame-label` on nav links (`frame-label` bakes `text-accent`, so inactive tabs cannot dim).
+- Below `lg`, that same link list is an overlay opened by a circular menu button (`aria-expanded`, `aria-controls`, Spanish “Abrir menú” / “Cerrar menú”). One list only: `hidden` until opened, `lg:flex` inline from `lg`. The panel is out of flow (`absolute` under the bar) and opaque (`bg-bg`, no blur) so the page does not show through. Escape closes and returns focus to the button. The outside-click listener is attached after open, so the opening tap does not close it. Crossing `lg` closes it. No focus trap and no body scroll-lock. Desktop links stay `text-xs` — a 44px min-height on them wraps the row. The menu button and theme toggle are `min-h-11`. Visible order below `lg`: brand, toggle, menu. The sticky bar stays `bg-bg/95`.
 - At the **top of `/`** (including scroll-back and rubber-band), the home tab is active. Live CMS may still label it **Inicio** with href `/`. Spy ids: `#portada` (required on the Hero `<section>`), leftover `#inicio` inside it. If `#portada` is missing, the first `<section>` in `<main>` is used. Logic: `lib/site/nav-spy.ts`.
 - Click-lock (~1.2s) stops intermediate sections flashing; it **expires on a timer and re-syncs** so a scroll-back after a click still updates. Home-tab and brand-mark clicks scroll to `scrollY = 0`.
 - Brand mark (`BrandLink`) targets `/#portada` and, on `/`, preventDefault + scroll-to-top so the header overlaying Portada still counts as Inicio.
@@ -252,11 +253,11 @@ Studio labels Spanish; code/files/`_type` English:
 
 ### Portada (`heroBlock`)
 
-- Fills the first viewport (`100dvh`, `100vh` fallback) and sits **under** the sticky header: `-mt-[var(--site-header-height)]` plus top padding that includes that height so copy/media start below the bar. Use `min-height`, not a fixed height, so mobile content can grow.
+- From `lg` (landscape tablet and desktop) it fills the first viewport (`100dvh`, `100vh` fallback). Below `lg` the section is only as tall as the copy, showcase, and padding — do not force `100dvh` on phones or portrait tablets. It sits **under** the sticky header at every width: `-mt-[var(--site-header-height)]` plus top padding that includes that height so copy/media start below the bar. Use `min-height`, not a fixed height, so a short landscape screen can still grow. Bottom padding below `lg` is `pb-8 sm:pb-10`, pairing with Quiénes somos’ top so that seam is one rhythm step (64px / 80px). From `lg` the bottom pad is `lg:pb-16` with a showcase and `lg:pb-20` without; the gap into Quiénes somos is the leftover inside the viewport.
 - Section `id` is the literal **`portada`** on the outer `<section>` (must match `HERO_SECTION_ID`). Also emit a zero-size **`inicio`** alias inside it so leftover `/#inicio` hashes resolve. After changing Hero, **`npm run build`** then restart `npm start` — `next start` will not pick up source-only edits.
 - Optional `showcaseClips` (max 3, Cloudinary video or image). **No** highlight/stat card in Portada.
 - Heading is `<h2>` — the page’s single accessible `<h1>` stays the `CmsPage` sr-only heading.
-- CTAs stack full-width on small screens.
+- CTAs share a wrapping row (`flex-wrap`, `max-w-full`, at least 44px tall). Below `sm` they use `text-sm` and `px-3` so both fit on one line near 390px; at 320px the row wraps instead of widening the page. Do not force a column stack through `sm`, and do not set `whitespace-nowrap`. From `sm`, padding returns to `px-8` and type to `text-base`. Description stays above the actions until `lg`. The decorative wash is a full-bleed layer on the `<section>` (`w-full`, no `max-w-8xl`). Copy and showcase stay in an inner `max-w-8xl` column so the glow is not clipped past 1536px. Clip that layer with its own `overflow-hidden` wrapper, not `overflow-x-clip` on the section (that clips both axes and can cut focus rings).
 
 ### Más trabajos (`workCtaBlock`)
 
@@ -287,11 +288,29 @@ Studio labels Spanish; code/files/`_type` English:
   - Same `hidden lg:inline` slide hint. No `-mx-4 px-4` edge bleed — that only made sense while the strip scrolled on phones.
 - Layout `sizes` live in the module's `SIZES_*` consts — keep `SIZES_CLIPS` / `SIZES_PORTRAIT` in step with the track widths above. Ratios come from the `RATIO` map via `MediaFrame` — no inline one-off aspect classes.
 
+### Inicio sections (Quiénes somos, Servicios, Proceso, Contacto)
+
+One scale. Max-width stays per section (`16ch` / `18ch` / `20ch`). Portada stays `text-hero`. Portafolio’s smaller heading and Más trabajos’ compact type stay as they are.
+
+- Each module uses the same padding on every side: `py-8 sm:py-10 lg:py-14`. Two modules then meet as one rhythm step (`4rem` / `5rem` / `7rem`). A full `py-16` on both sides opens a double gap (128px on a phone, 224px at `lg`). A full pad on one side and a half pad on the other makes the band lopsided, and a `0` pad glues the next heading to the color edge.
+- Quiénes somos and Contacto pad the inner `max-w-8xl` wrapper; Servicios and Proceso pad the `<section>`. Do not pad both. Contacto stays `items-start` so the copy lines up with the form; centering the short column drops the heading below the padding and the seam looks larger than the others.
+- Quiénes somos mark (the circle, not the copy): `w-64 sm:w-80 md:w-96 lg:w-full lg:max-w-md xl:max-w-lg`, centered below `lg` and end-aligned from `lg`. The circle is an `@container`; the wordmark and subtitle use `cqi` clamps so the type tracks the circle, not the viewport.
+- Eyebrow: `frame-label mb-6 flex items-center gap-3 sm:mb-8`. Portada keeps an extra `lg:mb-10`.
+- Heading: `text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl`.
+- Lede (Quiénes somos paragraphs, Contacto description): `text-base leading-relaxed text-muted sm:text-lg`.
+- Card and step body (Servicios, Proceso): `text-base leading-relaxed text-muted`. Do not step those to `sm:text-lg`.
+- Gap under the heading: services list `mt-10 sm:mt-14 lg:mt-16`; process track `mt-12 sm:mt-16 lg:mt-20`.
+
 ### Servicios
 
 - Typical seed: **4** cards in 2×2 on large screens (`columnsFor(4) === 2`).
 - Badges like “Servicio principal” / “Servicio complementario” (not only PLANO 01…).
-- Symmetric `py-28` (Más trabajos is not on Inicio).
+- One column when there is a single card. `sm:grid-cols-2` only when there are at least two. At `lg`, `columnsFor` (`--c`): four cards stay 2×2, three become one row.
+- Card padding `p-6 sm:p-8 lg:p-10`. Inside the card, badge-to-title and title-to-description are both `mt-4` (16px) at every width. Do not step that internal gap. Hover border only under `@media (hover: hover)` so a tap does not leave the card highlighted.
+
+### Proceso
+
+- Vertical track below `lg`, horizontal track from `lg`. Switch every layout class together (bar, playhead, step dots, and the list). Both tracks share `--p`; do not change the playhead math. Dots at `i / count * 100%` stay left-aligned with each column.
 
 ### Contacto + BriefForm
 
@@ -303,6 +322,7 @@ Studio labels Spanish; code/files/`_type` English:
 ### Theme / color
 
 - Tokens in `app/globals.css`: light defaults + `.dark` overrides (`--bg`, `--surface`, `--card`, `--fg`, `--muted`, `--line`, `--accent`, `--wash`).
+- Dark is the default (`class="dark"` on `<html>`). Do not read `prefers-color-scheme`. The header toggle is the only switch; it stores `theme` as `light` or `dark`. A missing value stays dark.
 - Brand accent is red (`--accent`); do not introduce purple/glow/default AI themes.
 - Icons and UI chrome must use tokens / `currentColor`, not hardcoded light-only greys.
 
@@ -432,10 +452,11 @@ Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-bui
 ### Layout conventions
 
 - Gutter `px-6`; max width `max-w-8xl` centered.
-- Full section rhythm `py-16`–`py-28`; **bridge** modules (Más trabajos) use compact `py-12 lg:py-16` between full `py-28` neighbors — don’t stack three `py-28`s and don’t use negative margins.
+- Full section rhythm `py-16`–`py-28` for a module that owns the whole step (Portafolio). **Bridge** modules (Más trabajos) use compact `py-12 lg:py-16`. Don’t stack three `py-28`s and don’t use negative margins.
+- Inicio sections (Quiénes somos, Servicios, Proceso, Contacto) share one padding: `py-8 sm:py-10 lg:py-14` on every side, so the gap between them is one rhythm step (`4rem` / `5rem` / `7rem`). Eyebrow `mb-6 sm:mb-8`, heading `text-4xl sm:text-5xl lg:text-6xl`, lede `text-base sm:text-lg`. Card and step copy stay `text-base`. Portada uses `text-hero`. Portafolio keeps its smaller heading so the project video stays near the fold.
 - Typography: prefer `text-hero` / clamp for display headings.
 - Grids: `grid-cols-1` → `sm:grid-cols-2` → `lg:grid-cols-3/4`; Servicios with 4 cards → 2×2.
-- Full-viewport heroes: `100dvh` sitting under the sticky header (`-mt` + content `pt` using `--site-header-height`); allow growth on small screens (`min-h`, not fixed `h`).
+- Full-viewport heroes from `lg` only: `100dvh` sitting under the sticky header (`-mt` + content `pt` using `--site-header-height`). Below `lg`, height follows content. Use `min-h`, not a fixed `h`, so a short landscape screen can grow.
 
 ### Touch, images, video, motion
 
@@ -524,6 +545,11 @@ When you change a standard, edit **this file** and add a one-line note below.
 
 | Date | Change |
 |------|--------|
+| 2026-09-27 | Servicios card stack is `mt-4` (16px) between badge, title, and description at every width |
+| 2026-09-27 | Quiénes somos mark steps with the screen; Servicios badge-to-title is `mt-6 sm:mt-8 lg:mt-10`; dark is the default (no OS scheme); open header menu is opaque |
+| 2026-09-27 | Portada wash is full-bleed; `max-w-8xl` stays on the inner column so the glow is not clipped past 1536px |
+| 2026-09-27 | Inicio modules share `py-8 sm:py-10 lg:py-14` on every side so the seam is one rhythm step; Contacto stays top-aligned with the form |
+| 2026-09-27 | Inicio: shared section scale; header overlay menu below `lg`; Portada actions wrap without widening the page; Proceso track switches at `lg` |
 | 2026-09-27 | Contacto / `BriefForm`: 16px fields on mobile, nombre + empresa 2-up from `sm:`, 44px chips on touch, mobile-first section padding |
 | 2026-09-27 | Portafolio Ficha técnica: named `creditRoles` fields generated from `PORTFOLIO_CREDIT_ROLES`; `creditList` for extras, legacy `credits` as fallback; description + credits side by side |
 | 2026-09-27 | Portafolio: reduced top padding so the project video sits closer to the fold (media stays full card width) |

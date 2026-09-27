@@ -13,6 +13,12 @@ function columnsFor(count: number) {
   return Math.min(3, count);
 }
 
+/** One card stays a single column. Two or more share a row from `sm`, then `columnsFor` at `lg`. */
+function gridClass(count: number) {
+  if (count < 2) return "grid-cols-1";
+  return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(var(--c),minmax(0,1fr))]";
+}
+
 export function ServicesBlock({ block }: BlockProps<ServicesBlockData>) {
   const services: ServiceItem[] = Array.isArray(block.services) ? block.services : [];
   if (services.length === 0) return null;
@@ -25,9 +31,9 @@ export function ServicesBlock({ block }: BlockProps<ServicesBlockData>) {
 
   return (
     // id on the section so hash nav includes top spacing, not just the first text.
-    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-28">
+    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-8 sm:py-10 lg:py-14">
       {block.eyebrow && (
-        <p className="frame-label mb-8 flex items-center gap-3">
+        <p className="frame-label mb-6 flex items-center gap-3 sm:mb-8">
           <span className="block h-px w-8 bg-current" />
           {block.eyebrow}
         </p>
@@ -48,23 +54,23 @@ export function ServicesBlock({ block }: BlockProps<ServicesBlockData>) {
         breathing room, instead of opening a hole in the middle.
       */}
       <ul
-        className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-[repeat(var(--c),minmax(0,1fr))]"
+        className={`mt-10 grid gap-5 sm:mt-14 sm:gap-6 lg:mt-16 lg:gap-8 ${gridClass(services.length)}`}
         style={{ "--c": columns } as React.CSSProperties}
       >
         {services.map((service, i) => (
           <li
             key={i}
-            className="flex flex-col rounded-2xl border border-line bg-card p-8 transition-colors duration-300 hover:border-accent lg:min-h-64"
+            className="flex flex-col rounded-2xl border border-line bg-card p-6 transition-colors duration-300 [@media(hover:hover)]:hover:border-accent sm:p-8 lg:min-h-64 lg:p-10"
           >
             <p className="self-start rounded-full border border-accent/40 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-accent">
               {service.badge || `Plano ${String(i + 1).padStart(2, "0")}`}
             </p>
 
-            <h3 className="mt-14 text-2xl font-semibold tracking-tight">
+            <h3 className="mt-4 text-2xl font-semibold tracking-tight">
               {service.title}
             </h3>
             {service.description && (
-              <p className="mt-4 max-w-[54ch] leading-relaxed text-muted">
+              <p className="mt-4 max-w-[54ch] text-base leading-relaxed text-muted">
                 {service.description}
               </p>
             )}

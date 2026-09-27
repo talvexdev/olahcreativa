@@ -16,7 +16,7 @@ export function Header({
 }) {
   return (
     <HeaderShell>
-      <div className="mx-auto flex max-w-8xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-6 py-5">
+      <div className="mx-auto flex max-w-8xl flex-nowrap items-center justify-between gap-x-3 px-6 py-3 lg:gap-x-6 lg:py-5">
         <BrandLink brandName={brandName}>
           {logo ? (
             <>
@@ -32,8 +32,12 @@ export function Header({
             brandName
           )}
         </BrandLink>
-        <SiteNav links={navLinks ?? []} />
-        <ThemeToggle />
+        {/* `lg:contents` lets the nav sit between brand and toggle on desktop.
+            Below `lg` the cluster stays on the right: toggle, then menu. */}
+        <div className="flex shrink-0 items-center gap-2 lg:contents">
+          <ThemeToggle className="order-1 lg:order-3" />
+          <SiteNav links={navLinks ?? []} className="order-2 shrink-0 lg:order-2 lg:shrink" />
+        </div>
       </div>
     </HeaderShell>
   );

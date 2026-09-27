@@ -4,8 +4,8 @@ import { useEffect, useRef, type ReactNode } from "react";
 
 /**
  * Publishes the sticky header’s real height as `--site-header-height` so
- * Portada can sit under it (`-mt` + matching `pt`) and fill `100dvh` —
- * including when the nav wraps on mobile/tablet.
+ * Portada can sit under it (`-mt` + matching `pt`) and fill `100dvh`.
+ * The mobile menu overlays the bar, so opening it does not change this height.
  */
 export function HeaderShell({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLElement>(null);

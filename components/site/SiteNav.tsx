@@ -20,6 +20,8 @@ type ParsedNavLink = SiteNavLink & {
 };
 
 const SPY_LOCK_MS = 1200;
+const MENU_ID = "site-nav-menu";
+const DESKTOP_NAV_QUERY = "(min-width: 1024px)";
 
 function parseHref(href: string): { path: string; hash: string } {
   const trimmed = href.trim();
@@ -116,7 +118,13 @@ function measureSections(ids: string[], homeHeroId: string | null) {
  * section currently under the header. At the top of `/`, the home tab
  * (Portada / leftover Inicio) is always active.
  */
-export function SiteNav({ links }: { links: SiteNavLink[] }) {
+export function SiteNav({
+  links,
+  className = "",
+}: {
+  links: SiteNavLink[];
+  className?: string;
+}) {
   const pathname = normalizePath(usePathname() || "/");
   const items = useMemo<ParsedNavLink[]>(
     () =>
@@ -132,12 +140,51 @@ export function SiteNav({ links }: { links: SiteNavLink[] }) {
   const [activeHash, setActiveHash] = useState(
     pathname === "/" ? HERO_SECTION_ID : "",
   );
+  const [open, setOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const spyLock = useRef<{ id: string; until: number } | null>(null);
   const lockTimer = useRef<number>(0);
   const syncRef = useRef<() => void>(() => {});
   const armLockRef = useRef<(id: string) => void>(() => {});
 
   const homeHeroId = pathname === "/" ? HERO_SECTION_ID : null;
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_NAV_QUERY);
+    const onChange = () => {
+      if (mq.matches) setOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    }
+
+    // Attached after open so the click that opened the menu does not close it.
+    function onPointerDown(event: PointerEvent) {
+      if (navRef.current?.contains(event.target as Node)) return;
+      setOpen(false);
+    }
+
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [open]);
 
   const sectionIds = useMemo(() => {
     const fromNav = items
@@ -238,6 +285,7 @@ export function SiteNav({ links }: { links: SiteNavLink[] }) {
   }, [pathname, sectionIds, homeHeroId]);
 
   function onNavClick(event: MouseEvent<HTMLAnchorElement>, item: ParsedNavLink) {
+    setOpen(false);
     if (item.path !== pathname) return;
 
     const heroLink = isHomeHeroLink(item.path, item.hash, item.label, pathname);
@@ -266,32 +314,57 @@ export function SiteNav({ links }: { links: SiteNavLink[] }) {
 
   if (items.length === 0) return null;
 
-  return (
-    <nav aria-label="Principal" className="flex flex-wrap gap-4 sm:gap-6 lg:gap-8">
-      {items.map((item) => {
-        const onThisPage = item.path === pathname;
-        const isHeroLink = isHomeHeroLink(item.path, item.hash, item.label, pathname);
-        const isHeroActive = isHeroLink && isHomeHeroHash(activeHash);
-        const isPageActive =
-          onThisPage && !item.hash && pathname !== "/" && !activeHash;
-        const isSectionActive =
-          onThisPage && Boolean(item.hash) && !isHeroLink && activeHash === item.hash;
-        const active = isHeroActive || isPageActive || isSectionActive;
+  const listClass = open
+    ? "absolute inset-x-0 top-full z-40 flex flex-col gap-1 border-b border-line bg-bg px-6 py-3 lg:static lg:z-auto lg:flex lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-8 lg:gap-y-2 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none"
+    : "hidden lg:flex lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-8 lg:gap-y-2";
 
-        return (
-          <Link
-            key={`${item.label}-${item.href}`}
-            href={item.href}
-            onClick={(event) => onNavClick(event, item)}
-            className={`font-mono text-xs uppercase tracking-[0.2em] transition-colors ${
-              active ? "text-accent" : "text-muted hover:text-fg"
-            }`}
-            aria-current={active ? "page" : undefined}
-          >
-            {item.label}
-          </Link>
-        );
-      })}
+  return (
+    <nav ref={navRef} aria-label="Principal" className={className}>
+      <button
+        ref={buttonRef}
+        type="button"
+        className="grid h-11 w-11 place-items-center rounded-full border border-line text-fg lg:hidden"
+        aria-expanded={open}
+        aria-controls={MENU_ID}
+        aria-label={open ? "Cerrar menú" : "Abrir menú"}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+          <path
+            d={open ? "M6 6l12 12M18 6L6 18" : "M4 7h16M4 12h16M4 17h16"}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+      <div id={MENU_ID} className={listClass}>
+        {items.map((item) => {
+          const onThisPage = item.path === pathname;
+          const isHeroLink = isHomeHeroLink(item.path, item.hash, item.label, pathname);
+          const isHeroActive = isHeroLink && isHomeHeroHash(activeHash);
+          const isPageActive =
+            onThisPage && !item.hash && pathname !== "/" && !activeHash;
+          const isSectionActive =
+            onThisPage && Boolean(item.hash) && !isHeroLink && activeHash === item.hash;
+          const active = isHeroActive || isPageActive || isSectionActive;
+
+          return (
+            <Link
+              key={`${item.label}-${item.href}`}
+              href={item.href}
+              onClick={(event) => onNavClick(event, item)}
+              className={`inline-flex min-h-11 items-center font-mono text-xs uppercase tracking-[0.2em] transition-colors lg:min-h-0 ${
+                active ? "text-accent" : "text-muted hover:text-fg"
+              }`}
+              aria-current={active ? "page" : undefined}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

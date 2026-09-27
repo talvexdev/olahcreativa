@@ -31,10 +31,10 @@ function getSnapshot(): Theme {
 
 // During SSR there is no DOM; React re-checks getSnapshot right after hydration.
 function getServerSnapshot(): Theme {
-  return "light";
+  return "dark";
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = "" }: { className?: string }) {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   function toggle() {
@@ -53,7 +53,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-      className="shrink-0 rounded-full border border-line px-3 py-1.5 font-mono text-[10px] tracking-[0.16em] text-muted transition-colors hover:border-accent hover:text-fg"
+      className={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-line px-2.5 font-mono text-[10px] tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-fg sm:px-3 sm:tracking-[0.16em] ${className}`}
     >
       {theme === "dark" ? "MODO OSCURO" : "MODO CLARO"}
     </button>

@@ -101,9 +101,9 @@ export function ProcessBlock({ block }: BlockProps<ProcessBlockData>) {
 
   return (
     // id on the section so hash nav includes top spacing, not just the first text.
-    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-28">
+    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-8 sm:py-10 lg:py-14">
       {block.eyebrow && (
-        <p className="frame-label mb-8 flex items-center gap-3">
+        <p className="frame-label mb-6 flex items-center gap-3 sm:mb-8">
           <span className="block h-px w-8 bg-current" />
           {block.eyebrow}
         </p>
@@ -116,9 +116,9 @@ export function ProcessBlock({ block }: BlockProps<ProcessBlockData>) {
         )}
       </h2>
 
-      <div ref={trackRef} className="relative mt-20">
+      <div ref={trackRef} className="relative mt-12 sm:mt-16 lg:mt-20">
         {/* ── Desktop: horizontal track above the cards ── */}
-        <div className="relative mb-10 hidden h-4 md:block">
+        <div className="relative mb-10 hidden h-4 lg:block">
           <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-line" />
           <div
             className="absolute left-0 top-1/2 h-px -translate-y-1/2 bg-accent"
@@ -139,26 +139,26 @@ export function ProcessBlock({ block }: BlockProps<ProcessBlockData>) {
         </div>
 
         {/* ── Mobile: vertical track down the left ── */}
-        <div className="absolute bottom-0 left-1.75 top-2 w-px bg-line md:hidden" />
+        <div className="absolute bottom-0 left-1.75 top-2 w-px bg-line lg:hidden" />
         <div
-          className="absolute left-1.75 top-2 w-px bg-accent md:hidden"
+          className="absolute left-1.75 top-2 w-px bg-accent lg:hidden"
           style={{ height: AT_PLAYHEAD }}
         />
         <span
-          className="absolute left-1.75 z-20 block h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-4 ring-accent/20 md:hidden"
+          className="absolute left-1.75 z-20 block h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-4 ring-accent/20 lg:hidden"
           style={{ top: AT_PLAYHEAD }}
           aria-hidden
         />
 
         <ol
-          className="grid gap-12 pl-9 md:grid-cols-[repeat(var(--n),minmax(0,1fr))] md:gap-8 md:pl-0"
+          className="grid gap-12 pl-9 lg:grid-cols-[repeat(var(--n),minmax(0,1fr))] lg:gap-8 lg:pl-0"
           style={{ "--n": count } as React.CSSProperties}
         >
           {steps.map((step, i) => {
             const code = step.timecode || `00:${String(i).padStart(2, "0")}`;
             return (
               <li key={i} className="relative">
-                <span className={`${dot(i <= active)} -left-9 top-1 md:hidden`} />
+                <span className={`${dot(i <= active)} -left-9 top-1 lg:hidden`} />
                 <p className="frame-label">
                   {code}
                   {step.label ? ` — ${step.label}` : ""}
@@ -171,7 +171,7 @@ export function ProcessBlock({ block }: BlockProps<ProcessBlockData>) {
                   {step.title}
                 </h3>
                 {step.description && (
-                  <p className="mt-3 max-w-[42ch] leading-relaxed text-muted">
+                  <p className="mt-3 max-w-[42ch] text-base leading-relaxed text-muted">
                     {step.description}
                   </p>
                 )}

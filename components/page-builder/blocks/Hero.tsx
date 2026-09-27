@@ -6,14 +6,15 @@ import { normalizeHeroShowcase, type HeroShowcaseClip } from "@/lib/page-builder
 import type { BlockProps, HeroBlockData } from "@/lib/sanity/block-types";
 
 /**
- * Portada fills the first viewport and sits *under* the sticky header:
- * pull up by `--site-header-height` so `#portada` starts at y = 0, then pad
- * content so it isn’t hidden under the bar. `100dvh` tracks mobile chrome;
- * `100vh` is the fallback where `dvh` isn’t supported.
+ * Portada sits *under* the sticky header: pull up by `--site-header-height`
+ * so `#portada` starts at y = 0, then pad content so it isn’t hidden under the
+ * bar. From `lg` (landscape tablet and desktop) it also fills the viewport.
+ * `100dvh` tracks mobile chrome; `100vh` is the fallback where `dvh` isn’t
+ * supported. Below `lg` the section is only as tall as its content.
  */
 const HERO_SHELL = [
   "-mt-[var(--site-header-height)]",
-  "min-h-[100vh] min-h-[100dvh]",
+  "lg:min-h-[100vh] lg:min-h-[100dvh]",
   "scroll-mt-0",
 ].join(" ");
 
@@ -127,15 +128,7 @@ export function HeroBlock({ block }: BlockProps<HeroBlockData>) {
   return (
     <section
       id="portada"
-      className={[
-        "relative mx-auto flex w-full max-w-8xl flex-col px-6",
-        HERO_SHELL,
-        // Grow past the fold if mobile + media would overflow (min-height, not fixed height).
-        // Top padding includes the sticky header so copy sits below it.
-        showcase
-          ? "justify-center gap-8 pb-10 pt-[calc(var(--site-header-height)+2.5rem)] sm:gap-10 sm:pb-12 sm:pt-[calc(var(--site-header-height)+3rem)] lg:justify-between lg:gap-12 lg:pb-16 lg:pt-[calc(var(--site-header-height)+4rem)]"
-          : "justify-center gap-8 pb-12 pt-[calc(var(--site-header-height)+3rem)] sm:gap-10 sm:pb-16 sm:pt-[calc(var(--site-header-height)+4rem)] lg:pb-20 lg:pt-[calc(var(--site-header-height)+5rem)]",
-      ].join(" ")}
+      className={["relative flex w-full flex-col", HERO_SHELL].join(" ")}
     >
       {/* Leftover CMS hash `/#inicio` lands on the same Portada module. */}
       <div
@@ -143,11 +136,21 @@ export function HeroBlock({ block }: BlockProps<HeroBlockData>) {
         aria-hidden="true"
         className="pointer-events-none absolute top-0 h-0 w-0 overflow-hidden"
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-36 -top-24 -z-10 h-155 w-155 rounded-full bg-wash blur-2xl sm:-top-32"
-      />
+      {/* Full-bleed wash. The section stays viewport-wide past `max-w-8xl` so the glow is not clipped to the content column. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -right-36 -top-24 h-155 w-155 rounded-full bg-wash blur-2xl sm:-top-32" />
+      </div>
 
+      <div
+        className={[
+          "relative z-0 mx-auto flex w-full max-w-8xl flex-1 flex-col px-6",
+          // Grow past the fold if mobile + media would overflow (min-height, not fixed height).
+          // Top padding includes the sticky header so copy sits below it.
+          showcase
+            ? "justify-center gap-8 pb-8 pt-[calc(var(--site-header-height)+2.5rem)] sm:gap-10 sm:pb-10 sm:pt-[calc(var(--site-header-height)+3rem)] lg:justify-between lg:gap-12 lg:pb-16 lg:pt-[calc(var(--site-header-height)+4rem)]"
+            : "justify-center gap-8 pb-8 pt-[calc(var(--site-header-height)+3rem)] sm:gap-10 sm:pb-10 sm:pt-[calc(var(--site-header-height)+4rem)] lg:pb-20 lg:pt-[calc(var(--site-header-height)+5rem)]",
+        ].join(" ")}
+      >
       <div className="relative z-0 shrink-0">
         {block.eyebrow && (
           <p className="frame-label mb-6 flex items-center gap-3 sm:mb-8 lg:mb-10">
@@ -170,11 +173,11 @@ export function HeroBlock({ block }: BlockProps<HeroBlockData>) {
             </p>
           )}
 
-          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-3.5">
+          <div className="flex w-full flex-wrap gap-2.5 sm:w-auto sm:gap-3">
             {block.ctaPrimary?.href && (
               <Link
                 href={block.ctaPrimary.href}
-                className="inline-flex items-center justify-center gap-2.5 rounded-full bg-accent px-8 py-4 font-medium text-white transition-transform hover:-translate-y-0.5"
+                className="inline-flex min-h-11 max-w-full items-center justify-center gap-2.5 rounded-full bg-accent px-3 py-3 text-center text-sm font-medium text-white transition-transform hover:-translate-y-0.5 sm:px-8 sm:py-4 sm:text-base"
               >
                 {block.ctaPrimary.label} <span className="font-mono">→</span>
               </Link>
@@ -182,7 +185,7 @@ export function HeroBlock({ block }: BlockProps<HeroBlockData>) {
             {block.ctaSecondary?.href && (
               <Link
                 href={block.ctaSecondary.href}
-                className="inline-flex items-center justify-center rounded-full border border-fg/25 px-8 py-4 font-medium transition-colors hover:border-fg"
+                className="inline-flex min-h-11 max-w-full items-center justify-center rounded-full border border-fg/25 px-3 py-3 text-center text-sm font-medium transition-colors hover:border-fg sm:px-8 sm:py-4 sm:text-base"
               >
                 {block.ctaSecondary.label}
               </Link>
@@ -192,6 +195,7 @@ export function HeroBlock({ block }: BlockProps<HeroBlockData>) {
       </div>
 
       {showcase ? <HeroShowcase clips={showcase.clips} /> : null}
+      </div>
     </section>
   );
 }

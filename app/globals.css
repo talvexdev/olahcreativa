@@ -1,8 +1,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Dark mode driven by a class on <html>, not by prefers-color-scheme —
-   the class is what lets the toggle override the system preference. */
+/* Dark mode is the default class on <html>. The toggle is the only switch;
+   the OS color scheme is not consulted. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Light theme = the defaults. */
