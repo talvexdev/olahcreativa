@@ -3,7 +3,7 @@
 > **Single source of truth.** Edit this file only.  
 > Cursor (`.cursor/rules/`), `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` point here — do not duplicate standards elsewhere.
 
-Stack: **Next.js 16 App Router** · **Sanity Studio v6** (`/studio`) · **Cloudinary** (images) · **Mux** (video) · **Tailwind CSS v4** · **Vercel**
+Stack: **Next.js 16 App Router** · **Sanity Studio v6** (`/studio`) · **Cloudinary** (images and video) · **Tailwind CSS v4** · **Netlify**
 
 Human setup (env, webhooks, accounts): see `README.md`.
 
@@ -38,14 +38,13 @@ app/                            # routes + API only
 
 components/
   site/                         # Header, HeaderShell, SiteNav, Footer, SocialIcon, ThemeToggle
-  media/                        # cloudinary/, MuxVideoPlayer, ProjectGallery
+  media/                        # cloudinary/, ProjectGallery
   forms/                        # BriefForm
   page-builder/                 # PageBuilder, CmsPage, blocks/*
 
 lib/
   sanity/                       # client, queries, projections, block-types, page-slugs, page-heading
-  cloudinary/                   # delivery (variants, urls, srcset) — keep top-level
-  mux/                          # Mux extract helpers — keep top-level
+  cloudinary/                   # delivery (variants, urls, srcset, video) — keep top-level
   page-builder/                 # anchors, hero/portfolio/image-grid normalizers
   site/                         # social platform ids/labels (footer icons)
   media-cleanup/                # tombstone extract helpers
@@ -54,6 +53,9 @@ lib/
 
 scripts/
   seed-pages.ts                 # local CLI seed (not an HTTP route)
+  cloudinary-folders.ts         # folders linked by content:sync
+  sync-cloudinary-portfolio.ts  # Cloudinary folder → Portafolio project
+  sync-netlify-env.ts           # .env.local → linked Netlify site
 
 sanity/                         # Studio-only
   schemaTypes/
@@ -61,12 +63,12 @@ sanity/                         # Studio-only
     objects/
       blocks/                   # English filenames matching _type
       anchorId.ts               # shared optional section anchor field
-      cloudinaryImage.ts, muxVideo.ts, link.ts
+      cloudinaryImage.ts, cloudinaryVideo.ts, link.ts
   lib/                          # structure.ts, templates.ts, page-seed.ts, tombstoneActions.ts
 sanity.config.ts
 ```
 
-Do **not** nest `lib/cloudinary` or `lib/mux` under `lib/media`. Do **not** add free-form CMS routes like `app/[slug]` for pages.
+Do **not** nest `lib/cloudinary` under `lib/media`. Do **not** add free-form CMS routes like `app/[slug]` for pages.
 
 ### Key paths
 
@@ -83,8 +85,10 @@ Do **not** nest `lib/cloudinary` or `lib/mux` under `lib/media`. Do **not** add 
 | Footer / social icons | `components/site/Footer.tsx`, `SocialIcon.tsx`, `lib/site/social.ts` |
 | Seed payloads | `sanity/lib/page-seed.ts` |
 | Seed CLI | `scripts/seed-pages.ts` → `npm run seed:pages` |
+| Cloudinary → Sanity | `scripts/cloudinary-folders.ts` + `npm run content:sync` |
+| Netlify env / deploy | `npm run netlify:env`, `netlify:deploy`, `netlify:deploy:prod`, `ship` |
 | Page templates | `sanity/lib/templates.ts` (imports `page-seed`) |
-| Image / video | `components/media/cloudinary/CloudinaryImage.tsx`, `MuxVideoPlayer.tsx` |
+| Image / video | `components/media/cloudinary/CloudinaryImage.tsx`, `CloudinaryVideo.tsx` |
 | Design tokens | `app/globals.css` (`@theme`, CSS variables, `--site-header-height`) |
 
 ---
@@ -126,14 +130,30 @@ Portafolio is **not** part of the Inicio seed. Más trabajos (`workCtaBlock`) is
 - **Script:** `scripts/seed-pages.ts` (local only; loads `.env.local`).
 - **Seeds:** `siteSettings` (header/footer/nav/social) + `homepage` + `pagePortfolio`.
 - **Guards:** require project id, dataset, `SANITY_API_WRITE_TOKEN` (`sk…`); skip if published/draft exists unless `--force`; `--dry-run` prints only; `--force` replaces published and deletes matching drafts.
-- **No media in seed:** Mux/Cloudinary assets, logos, and portfolio projects are added in the CMS editor.
-- **Do not** expose seeding as a public API route or cron.
+- **No media in seed:** Cloudinary assets, logos, and portfolio projects are added in the CMS editor or by `npm run content:sync`.
+- **Do not** expose seeding or content sync as a public API route or cron.
 
 ```bash
 npm run seed:pages              # create if missing
 npm run seed:pages -- --dry-run
 npm run seed:pages -- --force   # overwrite (use deliberately)
 ```
+
+### Cloudinary folder sync and Netlify
+
+Local CLI only. Do not expose `content:sync` as an HTTP route. Studio publish still updates the live site through the Sanity webhook once this code is deployed. `npm run ship` is for a code deploy or a refresh of the JP & PECA media.
+
+| Script | What it does |
+|--------|----------------|
+| `npm run content:sync` | Reads each folder in `scripts/cloudinary-folders.ts`. Longest video → video principal. Four shortest remaining videos → existing clip slots, filename order. Stills → gallery, timecode order. Skips the write when Sanity already matches. `--dry-run` prints only. |
+| `npm run netlify:env` | Merges runtime keys from `.env.local` into the linked Netlify site. Skips empty contact-form values. Does **not** upload `CLOUDINARY_API_SECRET`. |
+| `npm run netlify:deploy` | Draft deploy (`netlify deploy --build`). |
+| `npm run netlify:deploy:prod` | Production deploy (`netlify deploy --build --prod`). |
+| `npm run ship` | `content:sync`, then `netlify:env`, then production deploy. |
+
+`CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` are local-only, for `content:sync`. Never put the secret in Studio.
+
+The synced project is **JP & PECA** (`scripts/cloudinary-folders.ts`, folder `JP-PECA Portfolio`). **Video principal** is the long film. **Clips cortos** is CLIP 01, CLIP 02, CLIP 03, and STILL (the four short `Secuencia` clips). **Galería** is the still frames in timecode order. The command fills those existing fields and does not add projects or clip rows.
 
 ---
 
@@ -218,7 +238,7 @@ Studio labels Spanish; code/files/`_type` English:
 
 ### Module rules
 
-- Reuse `cloudinaryImage`, `muxVideo`, `link` — no parallel media types.
+- Reuse `cloudinaryImage`, `cloudinaryVideo`, `link` — no parallel media types.
 - Field `name`s English camelCase; Studio field `title`s / descriptions Spanish.
 - Blocks receive `{ block }`; normalize with `normalizeCloudinaryImage()` or `lib/page-builder/` helpers.
 - Prefer **Server Components**; `"use client"` only for interactivity (scroll scrub, forms, theme, video, nav scroll-spy).
@@ -234,7 +254,7 @@ Studio labels Spanish; code/files/`_type` English:
 
 - Fills the first viewport (`100dvh`, `100vh` fallback) and sits **under** the sticky header: `-mt-[var(--site-header-height)]` plus top padding that includes that height so copy/media start below the bar. Use `min-height`, not a fixed height, so mobile content can grow.
 - Section `id` is the literal **`portada`** on the outer `<section>` (must match `HERO_SECTION_ID`). Also emit a zero-size **`inicio`** alias inside it so leftover `/#inicio` hashes resolve. After changing Hero, **`npm run build`** then restart `npm start` — `next start` will not pick up source-only edits.
-- Optional `showcaseClips` (max 3, Mux + Cloudinary poster or image). **No** highlight/stat card in Portada.
+- Optional `showcaseClips` (max 3, Cloudinary video or image). **No** highlight/stat card in Portada.
 - Heading is `<h2>` — the page’s single accessible `<h1>` stays the `CmsPage` sr-only heading.
 - CTAs stack full-width on small screens.
 
@@ -247,8 +267,8 @@ Studio labels Spanish; code/files/`_type` English:
 ### Portafolio (`portfolioBlock`)
 
 - Full section rhythm `py-28` (repeatable module; Más trabajos owns its own compact padding).
-- **Main (16:9) video** keeps Mux controls and the CMS autoplay checkbox.
-- Grid **clips**: always muted, looping, no Mux chrome, viewport-lazy autoplay. Honor `prefers-reduced-motion`. Ignore the CMS “Autoplay muted” checkbox for these tiles.
+- **Main (16:9) video** keeps native controls and the CMS autoplay checkbox. Delivery preset `film` (1280).
+- Grid **clips**: four tiles (CLIP 01, CLIP 02, CLIP 03, STILL), always muted, looping, no controls, viewport-lazy autoplay. Honor `prefers-reduced-motion`. Ignore the CMS “Reproducir en silencio como fondo” checkbox for these tiles. Delivery preset `clip` (800). Schema max is 4.
 
 ### Servicios
 
@@ -273,7 +293,7 @@ Studio labels Spanish; code/files/`_type` English:
 
 ## 7. Environment & credentials
 
-### `.env.local` / Vercel
+### `.env.local` / Netlify
 
 | Variable | Purpose |
 |----------|---------|
@@ -282,6 +302,7 @@ Studio labels Spanish; code/files/`_type` English:
 | `SANITY_API_WRITE_TOKEN` | Media-cleanup webhook + local `npm run seed:pages` |
 | `SANITY_REVALIDATE_SECRET` | Webhook signature (you generate — not from Sanity) |
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Delivery URLs |
+| `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Local `npm run content:sync` only — not Studio, not Netlify |
 | `RESEND_API_KEY` / `CONTACT_TO_EMAIL` | Contact/brief form (`contactBlock`) |
 | `CONTACT_FROM_EMAIL` | Optional verified sender; else `onboarding@resend.dev` |
 | `NEXT_PUBLIC_SITE_URL` | Sitemap, robots, JSON-LD |
@@ -292,24 +313,13 @@ Update `.env.local.example` when adding vars (comments only — never commit sec
 
 | Service | Where | What |
 |---------|-------|------|
-| Cloudinary | `/studio` → Configure Cloudinary on image arrays | Cloud name + **API key only** |
-| Mux | `/studio` → Videos → Configure plugin | Token ID + secret |
+| Cloudinary | `/studio` → Configure Cloudinary on an image or video field | Cloud name + **API key only** |
 
-**Never** put Cloudinary API secret in Studio. Mux upload tokens stay in the Studio plugin.
+**Never** put the Cloudinary API secret in Studio. Video and images use the same Media Library; pick the Videos tab for clips.
 
-### `sanity.config.ts` — do not relax without explicit approval
+### `sanity.config.ts`
 
-```typescript
-muxInput({
-  video_quality: "basic",
-  max_resolution_tier: "1080p",
-  mp4_support: "none",
-  static_renditions: [],
-  defaultPublic: true,
-  defaultSigned: false,
-  disableUploadConfig: true,
-})
-```
+Video delivery widths live in `CLOUDINARY_VIDEO_VARIANTS` (`clip` 800, `film` 1280). Do not add per-component widths or `f_auto` on video (that stores a separate file per browser).
 
 Page templates: only `page-homepage` and `page-portfolio`. Hide blank page create — edit via structure singletons.
 
@@ -334,7 +344,7 @@ import { normalizeCloudinaryImage, cloudinaryImageUrl } from "@/lib/cloudinary";
   variant="grid"
   sizes="(max-width: 639px) 100vw, 50vw"
 />
-cloudinaryImageUrl(publicId, "lightbox"); // lightbox / Mux placeholder only
+cloudinaryImageUrl(publicId, "lightbox"); // lightbox only
 ```
 
 ### Variants (max **width** only in `lib/cloudinary/variants.ts`)
@@ -349,12 +359,12 @@ Transform caps live in `variants.ts`. Layout **`sizes`** is per slot — pass it
 | `hero` | 1920 | Full-width heroes |
 | `lightbox` | 2000 | Lightbox / zoom |
 
-**Animated images (GIF, animated WebP):** Cloudinary only — not Mux.
+**Animated images (GIF, animated WebP):** Cloudinary image delivery, not the video player.
 
 ### GROQ
 
 ```typescript
-import { cloudinaryImageProjection, muxVideoProjection } from "@/lib/sanity/projections";
+import { cloudinaryImageProjection, cloudinaryVideoProjection } from "@/lib/sanity/projections";
 ```
 
 Types: `SanityCloudinaryImage`, `CloudinaryPoster` from `@/lib/cloudinary`.  
@@ -362,29 +372,27 @@ SEO: `openGraphFromCloudinaryImage()` / `cloudinarySeoUrl()`.
 
 ---
 
-## 9. Video — Mux (required)
+## 9. Video — Cloudinary (required)
 
-- All video → Sanity `muxVideo` → `<MuxVideoPlayer />` from `@/components/media/MuxVideoPlayer`.
-- **Every** `muxVideo` needs a **Cloudinary poster** (required in schema).
-- Use `@mux/mux-player-react/lazy` with `loading="viewport"` via `MuxVideoPlayer`.
-- `preload="none"`, `capRenditionToPlayerSize`, poster via Cloudinary.
+- All video → Sanity `cloudinaryVideo` → `<CloudinaryVideo />` from `@/components/media/cloudinary`.
+- One MP4 per preset (`f_mp4`, `q_auto:good`, `c_limit`). Poster is the first frame (`so_0`, `f_jpg`) at the same width. Alt text is required; a separate poster image is not.
+- Request the file only when the player nears the viewport. `preload="none"`.
 - `autoplayMuted` only for short decorative loops (hero showcase / portfolio tiles).
-- `fillContainer` tiles: Mux `--media-object-fit: cover` (match Cloudinary `object-cover`). Editorial 16:9 players: `contain`.
-- Small viewports: one muted autoplay max on Portada (`allowMobileAutoplay` on the first clip only). Portafolio grid clips may all autoplay (muted, lazy). Honor `prefers-reduced-motion` in `MuxVideoPlayer` (not only CSS).
-- Do not embed raw `stream.mux.com` or use `image.mux.com` for posters.
+- `fillContainer` tiles: `object-cover`. Editorial 16:9 players: `object-contain`.
+- Small viewports: one muted autoplay max on Portada (`allowMobileAutoplay` on the first clip only). Portafolio grid clips may all autoplay (muted, lazy). Honor `prefers-reduced-motion` in `CloudinaryVideo` (not only CSS). Clips with controls hidden that must not autoplay stay on the poster and do not fetch video.
+- Do not use `CldVideoPlayer` or hand-built `res.cloudinary.com` URLs in feature code.
 
 Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-builder`.
 
 ---
 
-## 10. Free-tier performance (Cloudinary + Mux + Sanity)
+## 10. Free-tier performance (Cloudinary + Sanity)
 
 | Vendor | Constraint | Mitigation |
 |--------|------------|------------|
 | Sanity | API usage | Server-only fetch; webhook revalidation only; seed is local CLI |
-| Cloudinary | Transform credits | Fixed variants; `auto:good` / `auto` format |
-| Mux Free | Assets + delivery minutes | Lazy viewport player; tombstones; Basic quality locked |
-| Vercel | Bandwidth | Responsive `sizes`; don’t over-fetch hero on mobile |
+| Cloudinary | Credits (transforms, storage, bandwidth) | Fixed image variants; two video widths; one MP4 per clip; lazy playback |
+| Netlify | Bandwidth | Responsive `sizes`; don’t over-fetch hero on mobile |
 
 - Register removable media in `lib/media-cleanup/extract.ts` (including Portada `showcaseClips`).
 - 14-day tombstone grace — restore in Studio; delete orphans manually in vendor consoles.
@@ -419,7 +427,7 @@ Project lightbox mapping: `mapProjectMediaToGalleryItems()` from `@/lib/page-bui
 - Always aspect-ratio wrappers to prevent CLS; use `<CloudinaryImage variant="…" sizes="…" />`.
 - `priority={true}` only for LCP candidates.
 - Video: `aspect-video` on small screens; one muted autoplay max on Portada (`allowMobileAutoplay` on the first clip). Portafolio grid clips: muted looping autoplay in view.
-- Respect `prefers-reduced-motion` (global CSS **and** Mux autoplay gate in `MuxVideoPlayer`).
+- Respect `prefers-reduced-motion` (global CSS **and** the autoplay gate in `CloudinaryVideo`).
 
 ---
 
@@ -480,10 +488,10 @@ Use these when implementing or reviewing work:
 - Inline `CldImage` / `CldUploadWidget` / manual Cloudinary URLs in feature code
 - Pass `next/image` `loader` or function props from Server → Client Components
 - Add `next-cloudinary` React components outside `/studio`
-- Embed raw `stream.mux.com` or Mux image CDN for posters
+- Embed raw `res.cloudinary.com` URLs or `CldVideoPlayer` in feature code
 - Add `revalidate: N` polling
 - Store Cloudinary API secret in Studio
-- Enable Mux Plus/Premium, DRM, static MP4, or 4K without approval
+- Add video delivery widths outside `CLOUDINARY_VIDEO_VARIANTS`, or deliver video with `f_auto`
 - Skip `lib/media-cleanup/extract.ts` when adding removable CMS media
 - Invent breakpoints or Cloudinary transform widths outside `variants.ts` / Tailwind scale (`sizes` hints are per layout, not new variants)
 - Ship blocks without mobile layout, light/dark, and a11y checks
@@ -498,6 +506,8 @@ When you change a standard, edit **this file** and add a one-line note below.
 
 | Date | Change |
 |------|--------|
+| 2026-09-27 | Local `content:sync`, `netlify:env`, `netlify:deploy`, and `ship` — JP & PECA media from Cloudinary, then Netlify |
+| 2026-09-27 | Video moves from Mux to Cloudinary (`cloudinaryVideo`, `CloudinaryVideo`, presets `clip` / `film`) |
 | 2026-08-22 | Portafolio clips: always muted + loop + autoplay; reduced-motion disables autoplay |
 | 2026-08-22 | Studio: singleton pane ids ≠ page templates; Portafolio module opens in a full dialog |
 | 2026-08-22 | Más trabajos (`workCtaBlock`) moved from Inicio seed to Portafolio, after `portfolioBlock` |

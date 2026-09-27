@@ -14,8 +14,6 @@ export {
   type PortfolioProject,
 } from "./portfolio";
 
-export { normalizeProjectedMuxVideo, type ProjectedMuxVideo } from "./mux-video";
-
 export {
   getImageGridColumnClass,
   getImageGridSizes,

@@ -4,7 +4,7 @@ import siteSettings from "./documents/siteSettings";
 import mediaTombstone from "./documents/mediaTombstone";
 
 import cloudinaryImage from "./objects/cloudinaryImage";
-import muxVideo from "./objects/muxVideo";
+import cloudinaryVideo from "./objects/cloudinaryVideo";
 import link from "./objects/link";
 
 import heroBlock from "./objects/blocks/hero";
@@ -27,7 +27,7 @@ export const schemaTypes = [
   mediaTombstone,
   // Reusable objects
   cloudinaryImage,
-  muxVideo,
+  cloudinaryVideo,
   link,
   // Page-builder blocks
   heroBlock,

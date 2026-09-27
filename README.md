@@ -1,14 +1,13 @@
 # Portfolio MVP
 
-Next.js (App Router) + embedded Sanity Studio + Cloudinary (images) + Mux (video).
+Next.js (App Router) + embedded Sanity Studio + Cloudinary (images and video).
 Built to stay inside every vendor's free tier by design — see "Free-tier discipline" below.
 
 ## Stack
 
-- **Next.js 16** (App Router, TypeScript, Tailwind CSS v4) — hosted on Vercel
+- **Next.js 16** (App Router, TypeScript, Tailwind CSS v4) — hosted on Netlify
 - **Sanity Studio v6**, embedded at `/studio` — content modeling, page builder
-- **Cloudinary** — image storage/CDN, via `sanity-plugin-cloudinary` + `next-cloudinary`
-- **Mux** — video encoding/streaming, via `sanity-plugin-mux-input` + `@mux/mux-player-react`
+- **Cloudinary** — image and video delivery, via `sanity-plugin-cloudinary` + `next-cloudinary` URL helpers
 
 **Requirements:** Node.js 20+ (22 or 24 LTS recommended; Node 25 may show a `nanoid` engine warning from Sanity — harmless, or use nvm to switch to 24)
 
@@ -71,7 +70,32 @@ Agent conventions: [`docs/AGENT-STANDARDS.md`](docs/AGENT-STANDARDS.md).
 | 4 | `/studio` | Upload images on Inicio/Portafolio blocks, **Ajustes del sitio** logo, or a project cover |
 | 5 | Browser | Confirm `res.cloudinary.com` requests on `/` or `/portfolio` after publish |
 
-**Then Mux** (requires Cloudinary posters): configure Mux plugin in `/studio`, upload video + poster on a project or portfolio hero.
+**Then video:** in `/studio`, open a video field and pick a file from the Cloudinary Media Library (Videos tab). Short loops fit the free plan better than long films.
+
+### Portafolio page
+
+**JP & PECA** is the project on `/portfolio`. Its media comes from the Cloudinary folder `JP-PECA Portfolio`:
+
+| On the page | Source |
+|---|---|
+| **Video principal** | The long film (`bts`) |
+| **CLIP 01**, **CLIP 02**, **CLIP 03**, **STILL** | The four short `Secuencia` clips |
+| **Galería** | The still frames, in timecode order |
+
+`npm run content:sync` writes that same layout back into Sanity when the folder and the page differ. `npm run content:sync -- --dry-run` only prints the plan. A Studio publish updates the live site through the webhook once the Cloudinary player is deployed.
+
+### Deploy to Netlify
+
+Deploys stay on this machine (the site is not connected to Git auto-deploy). Link the site once with `netlify link` if `.netlify` is missing.
+
+```bash
+npm run netlify:env            # copy runtime keys from .env.local (not the Cloudinary API secret)
+npm run netlify:deploy         # draft URL
+npm run netlify:deploy:prod    # replace the live site
+npm run ship                   # content:sync, then env, then production deploy
+```
+
+`npm run ship` is for a code change or a refresh of the JP & PECA media. A normal Studio publish does not need a deploy.
 
 ### Environment variables you need to supply
 
@@ -103,7 +127,7 @@ Agent conventions: [`docs/AGENT-STANDARDS.md`](docs/AGENT-STANDARDS.md).
    for `project`, `page`, and `siteSettings` document types, secret =
    `SANITY_REVALIDATE_SECRET`. Creates tombstone records when media is removed so
    editors have a 14-day grace window to restore before deleting assets in
-   Cloudinary/Mux manually.
+   Cloudinary manually.
 4. **Create Ajustes del sitio** once, then open **Páginas → Inicio** and
    **Portafolio**, add/edit modules, and publish. Populate **Proyectos** as needed
    for `/work/[slug]`.
@@ -117,9 +141,9 @@ Agent conventions: [`docs/AGENT-STANDARDS.md`](docs/AGENT-STANDARDS.md).
 - Project detail pages (`/work/[slug]`), embedded Studio
 - Cloudinary image pipeline with a fixed, named set of size variants (bounds
   transformation-credit usage — see below)
-- Mux video pipeline with lazy-mounted playback (bounds delivered-minutes usage)
+- Cloudinary video pipeline: one MP4 per preset, lazy-mounted playback
 - Lightbox on project detail pages (`yet-another-react-lightbox` via `ProjectGallery`)
-- On-demand revalidation route (Sanity webhook → Next.js → Vercel)
+- On-demand revalidation route (Sanity webhook → Next.js → Netlify)
 - Media-cleanup pipeline: tombstone webhook (`/api/webhooks/media-cleanup`),
   Studio "Restore asset" action on pending tombstones
 - Sitemap (`/sitemap.xml`), robots (`/robots.txt`), and JSON-LD structured data
@@ -132,7 +156,7 @@ Agent conventions: [`docs/AGENT-STANDARDS.md`](docs/AGENT-STANDARDS.md).
 
 ## Free-tier discipline (why the code looks the way it does)
 
-A few choices exist specifically to keep usage inside Sanity/Cloudinary/Mux/Vercel
+A few choices exist specifically to keep usage inside Sanity/Cloudinary/Netlify
 free tiers, not just for code cleanliness — worth knowing before "simplifying":
 
 - **No client-side Sanity queries anywhere.** Everything fetches at build/request
@@ -143,10 +167,10 @@ free tiers, not just for code cleanliness — worth knowing before "simplifying"
   per usage — keeps Cloudinary transformation-credit usage bounded and predictable
   as the site grows. Add new use cases in that file, then use
   `<CloudinaryImage variant="…" />` from `@/components/media/cloudinary`.
-- **Lazy-mounted video** (`@/components/media/MuxVideoPlayer`) — off-screen video never streams,
-  which is what keeps Mux delivered-minutes tied to real engagement.
+- **Lazy-mounted video** (`CloudinaryVideo`) — off-screen video is not requested,
+  which keeps Cloudinary video bandwidth tied to clips people actually reach.
 - **Tombstone tracking** on media cleanup gives editors a 14-day grace window
-  to restore accidentally removed assets; delete orphaned Cloudinary/Mux files
+  to restore accidentally removed assets; delete orphaned Cloudinary files
   manually in each vendor console when the grace period ends.
 
 If any of these constraints get lifted later (e.g. moving off free tiers), they're

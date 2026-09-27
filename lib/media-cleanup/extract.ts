@@ -1,52 +1,33 @@
 import { walkSanityCloudinaryImage } from "@/lib/cloudinary/extract";
-import { walkSanityMuxVideo } from "@/lib/mux/extract";
 
 export type MediaAsset = {
-  provider: "cloudinary" | "mux";
+  provider: "cloudinary";
   assetId: string;
 };
 
 type MediaAssetWithSource = MediaAsset & { sourceDocumentTitle: string };
 
-export type ExtractMediaAssetsOptions = {
-  /** Resolves `mux.videoAsset` document IDs to Mux API asset IDs. */
-  resolveMuxRefs?: (documentIds: string[]) => Promise<string[]>;
-};
-
 /**
  * Walks known document shapes (project, page, siteSettings, pageBuilder blocks)
- * and collects Cloudinary public_id values and Mux asset IDs for tombstone creation.
+ * and collects Cloudinary public_id values for tombstone creation.
  */
-export async function extractMediaAssets(
+export function extractMediaAssets(
   doc: Record<string, unknown>,
-  sourceDocumentTitle: string,
-  options?: ExtractMediaAssetsOptions
-): Promise<MediaAssetWithSource[]> {
+  sourceDocumentTitle: string
+): MediaAssetWithSource[] {
   const assets: MediaAssetWithSource[] = [];
   const seen = new Set<string>();
-  const muxRefs = new Set<string>();
 
-  function add(provider: "cloudinary" | "mux", assetId: string | undefined) {
+  function add(assetId: string | undefined) {
     if (!assetId) return;
-    const key = `${provider}:${assetId}`;
+    const key = `cloudinary:${assetId}`;
     if (seen.has(key)) return;
     seen.add(key);
-    assets.push({ provider, assetId, sourceDocumentTitle });
+    assets.push({ provider: "cloudinary", assetId, sourceDocumentTitle });
   }
 
   function walkCloudinaryImage(obj: unknown) {
-    walkSanityCloudinaryImage(obj, (publicId) => add("cloudinary", publicId));
-  }
-
-  function walkMuxVideo(obj: unknown) {
-    if (!obj || typeof obj !== "object") return;
-
-    walkSanityMuxVideo(obj, {
-      onAssetId: (assetId) => add("mux", assetId),
-      onUnresolvedRef: (documentId) => muxRefs.add(documentId),
-    });
-
-    walkCloudinaryImage((obj as Record<string, unknown>).poster);
+    walkSanityCloudinaryImage(obj, add);
   }
 
   function walkPageBuilder(blocks: unknown) {
@@ -59,7 +40,7 @@ export async function extractMediaAssets(
         clips?.forEach((clip) => {
           if (!clip || typeof clip !== "object") return;
           const c = clip as Record<string, unknown>;
-          walkMuxVideo(c.video);
+          walkCloudinaryImage(c.video);
           walkCloudinaryImage(c.image);
         });
       }
@@ -74,12 +55,12 @@ export async function extractMediaAssets(
           if (!project || typeof project !== "object") continue;
           const p = project as Record<string, unknown>;
           walkCloudinaryImage(p.heroImage);
-          walkMuxVideo(p.heroVideo);
+          walkCloudinaryImage(p.heroVideo);
           const clips = p.clips as unknown[];
           clips?.forEach((clip) => {
             if (clip && typeof clip === "object") {
               const c = clip as Record<string, unknown>;
-              walkMuxVideo(c.video);
+              walkCloudinaryImage(c.video);
               walkCloudinaryImage(c.image);
             }
           });
@@ -100,8 +81,7 @@ export async function extractMediaAssets(
     for (const item of doc.media) {
       if (!item || typeof item !== "object") continue;
       const m = item as Record<string, unknown>;
-      if (m._type === "cloudinaryImage") walkCloudinaryImage(m);
-      if (m._type === "muxVideo") walkMuxVideo(m);
+      if (m._type === "cloudinaryImage" || m._type === "cloudinaryVideo") walkCloudinaryImage(m);
     }
   }
 
@@ -113,28 +93,18 @@ export async function extractMediaAssets(
   walkCloudinaryImage(doc.logo);
   walkCloudinaryImage(doc.defaultSeoImage);
 
-  if (muxRefs.size > 0 && options?.resolveMuxRefs) {
-    const resolved = await options.resolveMuxRefs([...muxRefs]);
-    for (const assetId of resolved) {
-      add("mux", assetId);
-    }
-  }
-
   return assets;
 }
 
 /** Returns assets in `oldDoc` that are not present in `newDoc`. */
-export async function diffRemovedMedia(
+export function diffRemovedMedia(
   oldDoc: Record<string, unknown>,
   newDoc: Record<string, unknown>,
-  sourceDocumentTitle: string,
-  options?: ExtractMediaAssetsOptions
-): Promise<MediaAssetWithSource[]> {
-  const oldAssets = await extractMediaAssets(oldDoc, sourceDocumentTitle, options);
+  sourceDocumentTitle: string
+): MediaAssetWithSource[] {
+  const oldAssets = extractMediaAssets(oldDoc, sourceDocumentTitle);
   const newKeys = new Set(
-    (await extractMediaAssets(newDoc, sourceDocumentTitle, options)).map(
-      (a) => `${a.provider}:${a.assetId}`
-    )
+    extractMediaAssets(newDoc, sourceDocumentTitle).map((a) => `${a.provider}:${a.assetId}`)
   );
   return oldAssets.filter((a) => !newKeys.has(`${a.provider}:${a.assetId}`));
 }

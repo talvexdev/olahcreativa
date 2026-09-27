@@ -6,10 +6,18 @@ export type {
   CloudinaryPoster,
   CloudinaryVariant,
   CloudinaryVariantConfig,
+  CloudinaryVideoVariant,
   SanityCloudinaryImage,
+  SanityCloudinaryVideo,
 } from "./types";
 
-export { CLOUDINARY_DELIVERY, CLOUDINARY_VARIANTS, getCloudinaryVariant } from "./variants";
+export {
+  CLOUDINARY_DELIVERY,
+  CLOUDINARY_VARIANTS,
+  CLOUDINARY_VIDEO_VARIANTS,
+  getCloudinaryVariant,
+  getCloudinaryVideoVariant,
+} from "./variants";
 
 export {
   buildCloudinaryDeliveryUrl,
@@ -17,6 +25,8 @@ export {
   cloudinaryImageUrl,
   cloudinaryMaxDeliveryWidth,
   cloudinarySeoUrl,
+  cloudinaryVideoPosterUrl,
+  cloudinaryVideoUrl,
 } from "./url";
 
 export {
@@ -28,6 +38,7 @@ export {
 export {
   hasCloudinaryAsset,
   normalizeCloudinaryImage,
+  normalizeCloudinaryVideo,
   toCloudinaryPoster,
 } from "./guards";
 
