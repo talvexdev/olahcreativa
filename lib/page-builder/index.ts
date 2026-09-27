@@ -8,8 +8,10 @@ export {
 export {
   normalizePortfolioBlock,
   normalizePortfolioProject,
+  PORTFOLIO_CREDIT_ROLES,
   type PortfolioBlockViewModel,
   type PortfolioClip,
+  type PortfolioCredit,
   type PortfolioGalleryPhoto,
   type PortfolioProject,
 } from "./portfolio";

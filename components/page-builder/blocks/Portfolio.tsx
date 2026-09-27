@@ -4,6 +4,7 @@ import {
   normalizePortfolioBlock,
   resolveSectionId,
   type PortfolioClip,
+  type PortfolioCredit,
   type PortfolioProject,
 } from "@/lib/page-builder";
 import type { BlockProps, PortfolioBlockData } from "@/lib/sanity/block-types";
@@ -14,8 +15,10 @@ const RATIO = {
 } as const;
 
 const SIZES_HERO = "(max-width: 1536px) 100vw, 1536px";
-const SIZES_CLIPS = "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw";
-const SIZES_PORTRAIT = "(max-width: 639px) 224px, 256px";
+/** Clips: 2-up mosaic tiles (~50vw) below `lg:`, 344px carousel cards above. */
+const SIZES_CLIPS = "(max-width: 1023px) 50vw, 344px";
+/** Stills: 2-up mosaic tiles (~50vw) below `lg:`, 256px carousel cards above. */
+const SIZES_PORTRAIT = "(max-width: 1023px) 50vw, 256px";
 
 function MediaFrame({
   ratio = "video",
@@ -101,6 +104,29 @@ function ClipMedia({ clip, title }: { clip: PortfolioClip; title?: string }) {
   return null;
 }
 
+/** Ficha técnica: role as a small rule-topped label, name underneath. */
+function CreditGrid({ credits }: { credits: PortfolioCredit[] }) {
+  return (
+    /* <ul> rather than <dl>: legacy credits carry no role, and a <dd> with no <dt>
+       is invalid. Columns auto-fit at 150px, so the grid lands on 3 tracks at
+       ~1419px and 4 at ~1601px, as the design does — don't hardcode a count. */
+    <ul className="grid grid-cols-2 gap-x-6 gap-y-7 sm:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
+      {credits.map((credit, i) => (
+        <li key={i} className="min-w-0 border-t border-line pt-2.5">
+          {credit.role && (
+            <p className="font-mono text-[10px] uppercase leading-none tracking-[0.18em] text-muted">
+              {credit.role}
+            </p>
+          )}
+          <p className={`text-[15px] font-semibold leading-snug ${credit.role ? "mt-2" : ""}`}>
+            {credit.name}
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function ProjectCard({ project, index }: { project: PortfolioProject; index: number }) {
   const clips = project.clips ?? [];
   const gallery = project.gallery ?? [];
@@ -108,7 +134,7 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
   const label = project.label || `Proyecto ${String(index + 1).padStart(2, "0")}`;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-line bg-card">
+    <article className="overflow-hidden rounded-xl border border-line bg-card sm:rounded-2xl">
       <div className="group relative">
         {project.heroVideo?.publicId ? (
           <CloudinaryVideo
@@ -134,61 +160,86 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
           </MediaFrame>
         )}
 
-        <div className="px-4 py-6 sm:px-8 lg:pointer-events-none lg:absolute lg:inset-x-0 lg:bottom-0 lg:bg-gradient-to-t lg:from-bg lg:via-bg/80 lg:to-transparent lg:px-8 lg:pb-8 lg:pt-24">
+        <div className="px-4 py-6 sm:px-8 lg:pointer-events-none lg:absolute lg:inset-x-0 lg:bottom-0 lg:bg-linear-to-t lg:from-bg lg:via-bg/80 lg:to-transparent lg:px-8 lg:pb-8 lg:pt-24">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">
             {label}
             {project.category && <span className="text-muted"> · {project.category}</span>}
           </p>
-          <h3 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{project.title}</h3>
+          <h3 className="mt-2 text-balance text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
+            {project.title}
+          </h3>
         </div>
       </div>
 
       <div className="bg-surface px-4 py-10 sm:px-8">
-        {project.description && (
-          <p className="max-w-[62ch] text-lg leading-relaxed">{project.description}</p>
-        )}
+        {(project.description || credits.length > 0) && (
+          <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+            {project.description && (
+              <div>
+                <p className="frame-label mb-4">El proyecto</p>
+                <p className="max-w-[46ch] text-lg leading-relaxed sm:text-xl">
+                  {project.description}
+                </p>
+              </div>
+            )}
 
-        {credits.length > 0 && (
-          <ul className="mt-6 space-y-1.5 font-mono text-xs leading-relaxed text-muted">
-            {credits.map((line, i) => (
-              <li key={i}>{line}</li>
-            ))}
-          </ul>
+            {credits.length > 0 && <CreditGrid credits={credits} />}
+          </div>
         )}
 
         {clips.length > 0 && (
-          <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {clips.map((clip, i) => (
-              <li key={i}>
-                <MediaFrame
-                  className="rounded-xl"
-                  badge={clip.label || `Clip ${String(i + 1).padStart(2, "0")}`}
-                >
-                  <ClipMedia clip={clip} title={project.title} />
-                </MediaFrame>
-                {clip.caption && (
-                  <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-                    {clip.caption}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
+          <div className="mt-10">
+            {/* The slide hint applies to the `lg:` carousel only — below that it is a mosaic. */}
+            <p className="frame-label mb-4 text-muted">
+              En movimiento
+              <span className="hidden lg:inline">
+                {" "}
+                <span aria-hidden>→</span> desliza para ver más
+              </span>
+            </p>
+            <ul
+              tabIndex={0}
+              role="region"
+              aria-label={`Clips de ${project.title || label}`}
+              className="grid grid-cols-2 gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent sm:gap-4 lg:flex lg:snap-x lg:snap-mandatory lg:overflow-x-auto lg:pb-4"
+            >
+              {clips.map((clip, i) => (
+                <li key={i} className="lg:w-86 lg:shrink-0 lg:snap-start">
+                  <MediaFrame
+                    className="rounded-xl"
+                    badge={clip.label || `Clip ${String(i + 1).padStart(2, "0")}`}
+                  >
+                    <ClipMedia clip={clip} title={project.title} />
+                  </MediaFrame>
+                  {clip.caption && (
+                    <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                      {clip.caption}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         {gallery.length > 0 && (
           <div className="mt-12">
+            {/* The slide hint applies to the `lg:` carousel only — below that it is a mosaic. */}
             <p className="frame-label mb-4 text-muted">
-              Galería <span aria-hidden>→</span> desliza para ver más
+              Galería
+              <span className="hidden lg:inline">
+                {" "}
+                <span aria-hidden>→</span> desliza para ver más
+              </span>
             </p>
             <ul
               tabIndex={0}
               role="region"
               aria-label={`Galería de ${project.title || label}`}
-              className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+              className="grid grid-cols-2 gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent sm:gap-4 lg:flex lg:snap-x lg:snap-mandatory lg:overflow-x-auto lg:pb-4"
             >
               {gallery.map((photo, i) => (
-                <li key={i} className="w-56 shrink-0 snap-start sm:w-64">
+                <li key={i} className="lg:w-64 lg:shrink-0 lg:snap-start">
                   <MediaFrame
                     ratio="portrait"
                     className="rounded-xl"
@@ -223,24 +274,31 @@ export function PortfolioBlock({ block }: BlockProps<PortfolioBlockData>) {
   });
 
   return (
-    <section id={sectionId} className="mx-auto max-w-8xl px-6 py-28">
+    /* Tight under the sticky header so the first project's video reaches the
+       viewport on load; the full section rhythm stays on the bottom edge. */
+    <section
+      id={sectionId}
+      className="mx-auto max-w-8xl px-6 pb-16 pt-12 sm:pb-20 sm:pt-16 lg:pb-28 lg:pt-20"
+    >
       {view.eyebrow && (
-        <p className="frame-label mb-8 flex items-center gap-3">
+        <p className="frame-label mb-6 flex items-center gap-3 sm:mb-8">
           <span className="block h-px w-8 bg-current" />
           {view.eyebrow}
         </p>
       )}
 
-      <h2 className="max-w-[20ch] text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+      <h2 className="max-w-[20ch] text-balance text-3xl font-semibold leading-[1.05] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
         {view.heading}{" "}
         {view.headingAccent && <span className="text-accent">{view.headingAccent}</span>}
       </h2>
 
       {view.description && (
-        <p className="mt-8 max-w-[52ch] text-lg leading-relaxed text-muted">{view.description}</p>
+        <p className="mt-6 max-w-[52ch] text-base leading-relaxed text-muted sm:mt-8 sm:text-lg">
+          {view.description}
+        </p>
       )}
 
-      <div className="mt-16 space-y-16">
+      <div className="mt-10 space-y-12 sm:mt-16 sm:space-y-16">
         {view.projects.map((project, i) => (
           <ProjectCard key={i} project={project} index={i} />
         ))}
